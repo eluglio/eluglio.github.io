@@ -194,14 +194,14 @@
 
     <!-- Application Engine -->
     <script>
+        const hoje = new Date();
+        const dia = String(hoje.getDate()).padStart(2, '0');
+        const mes = String(hoje.getMonth() + 1).padStart(2, '0'); // O mês começa em 0 (janeiro = 0), por isso somamos 1
+
+        const dataAtual = `${dia}/${mes}`;
         // Default Agenda Dataset
         const defaultAgendaData = [
-            { date: "13/10", eventName: "Caminhada da Vitória", location: "Oliveira Lima", time: "14h às 19h", responsible: "Drica" },
-            { date: "14/10\nTerça", eventName: "Plenária Popular e Diálogo com Lideranças Locais", location: "Rua Oliveira Lima, Centro", time: "14h às 19h", responsible: "Silvio & Equipe" },
-            { date: "14/10", eventName: "Bandeiraço e Panfletagem no Terminal", location: "Estação SA", time: "17h às 19h", responsible: "Douglas" },
-            { date: "15/10", eventName: "Reunião de Alinhamento Geral com Apoiadores", location: "Vila Luzita", time: "16h às 19h", responsible: "Márcio" },
-            { date: "16/10", eventName: "Comício Central de Encerramento da Campanha", location: "Estação SA", time: "17h às 19h", responsible: "Roberto" },
-            { date: "17/10", eventName: "Grande Carreata da Democracia", location: "Oliveira Lima", time: "10h/dia todo", responsible: "Silvio" }
+            { date: dataAtual, eventName: "Novo evento", location: "Novo local", time: "0h", responsible: "Responsável" }
         ];
 
         // Global State
@@ -343,7 +343,7 @@
 
             if (itemCount > 0) {
                 const startY = 225;
-                const availableHeight = 750;
+                const availableHeight = 1050;
                 
                 const itemHeight = Math.min(98, Math.max(62, Math.floor((availableHeight - (itemCount - 1) * 10) / itemCount)));
                 const rowGap = Math.min(12, Math.max(6, Math.floor((availableHeight - itemCount * itemHeight) / (itemCount + 1))));
@@ -707,7 +707,7 @@
         }
 
         function addNewRow() {
-            agendaData.push({ date: "18/10", eventName: "Novo Evento Oficial", location: "Novo Local", time: "14h às 18h", responsible: "Equipe" });
+            agendaData.push({ date: dataAtual, eventName: "Novo evento", location: "Novo local", time: "0h", responsible: "Responsável" });
             saveData();
             renderEditorTable();
             drawAgendaCanvas();
