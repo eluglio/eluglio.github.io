@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Agenda Oficial - Colunas Multilinha & Canvas HD</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Montserrat & Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Montserrat:ital,wght@0,700;0,800;0,900;1,900&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Montserrat', 'Inter', sans-serif;
+        }
+        /* Custom scrollbar styling */
+        .custom-scroll::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scroll::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: rgba(239, 68, 68, 0.5);
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body class="bg-stone-950 text-stone-100 min-h-screen flex flex-col antialiased">
+
+    <!-- Header / Navbar -->
+    <header class="bg-stone-900/90 backdrop-blur border-b border-stone-800 sticky top-0 z-50 py-3.5 px-4 md:px-8 shadow-xl">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="bg-gradient-to-br from-red-600 to-red-700 text-white p-2.5 rounded-2xl shadow-lg shadow-red-900/30">
+                    <i class="fa-solid fa-calendar-days text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg md:text-xl font-black tracking-tight text-white flex items-center gap-2">
+                        Gerador de Agenda Oficial <span class="bg-red-600/30 text-red-400 text-[10px] uppercase px-2 py-0.5 rounded-full font-bold border border-red-500/30">Multilinha Completo</span>
+                    </h1>
+                    <p class="text-xs text-stone-400">Layout Canvas HD (1080x1380) com quebra de linha em todas as colunas</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <button onclick="downloadCanvasPNG()" id="btn-download" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs md:text-sm font-extrabold px-5 py-2.5 rounded-xl shadow-lg shadow-emerald-950/50 transition flex items-center gap-2 cursor-pointer active:scale-95">
+                    <i class="fa-solid fa-download"></i> Baixar Card PNG (HD)
+                </button>
+                <button onclick="resetData()" class="bg-stone-800 hover:bg-stone-700 text-stone-300 text-xs md:text-sm font-semibold px-4 py-2.5 rounded-xl border border-stone-700 transition flex items-center gap-2 cursor-pointer">
+                    <i class="fa-solid fa-rotate-right"></i> Restaurar
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Workspace Layout -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        
+        <!-- Left Column: Canvas Preview -->
+        <section class="lg:col-span-6 flex flex-col items-center">
+            <div class="w-full flex justify-between items-center mb-3 px-1">
+                <span class="text-xs font-bold tracking-wider text-stone-400 uppercase flex items-center gap-1.5">
+                    <i class="fa-solid fa-circle-check text-emerald-500"></i> Canvas HD Nativo (1080 x 1380 px)
+                </span>
+                <span class="text-xs bg-stone-900 text-stone-300 px-3 py-1 rounded-full font-bold border border-stone-800">
+                    <span id="item-count-badge" class="text-amber-400">0</span> compromissos
+                </span>
+            </div>
+
+            <!-- Canvas Wrapper -->
+            <div class="w-full max-w-[580px] bg-stone-900 p-2 md:p-3 rounded-3xl border border-stone-800 shadow-2xl relative overflow-hidden flex justify-center items-center">
+                <canvas id="agendaCanvas" width="1080" height="1380" class="w-full h-auto rounded-2xl shadow-inner border border-white/5 bg-black block cursor-pointer" title="Clique no botão de download para gerar o PNG de alta resolução"></canvas>
+            </div>
+            <p class="text-[11px] text-stone-500 mt-2 text-center">
+                <i class="fa-solid fa-shield-halved text-amber-500/80 mr-1"></i>
+                Suporte nativo a texto multilinha em todas as colunas (Data, Evento, Local, Horário e Responsável).
+            </p>
+        </section>
+
+        <!-- Right Column: Controls & Data Editor -->
+        <section class="lg:col-span-6 flex flex-col gap-5">
+            
+            <!-- Header Images & Background Themes -->
+            <div class="bg-stone-900/80 p-5 rounded-3xl border border-stone-800 shadow-xl flex flex-col gap-4">
+                <div>
+                    <h2 class="text-sm md:text-base font-extrabold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-image text-amber-400"></i> Imagens de Cabeçalho & Tema
+                    </h2>
+                    <p class="text-xs text-stone-400 mt-0.5">Carregue logos transparentes e escolha a cor de fundo do card</p>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <!-- Left Image -->
+                    <div class="flex flex-col gap-1.5">
+                        <label class="text-[11px] font-bold uppercase tracking-wider text-stone-300">Esquerda (Agenda):</label>
+                        <label class="bg-stone-950 hover:bg-stone-800 border border-stone-700 hover:border-amber-400 text-stone-200 text-xs font-semibold px-3 py-2.5 rounded-xl cursor-pointer transition flex items-center justify-center gap-2 text-center">
+                            <i class="fa-solid fa-cloud-arrow-up text-amber-400"></i> Carregar Imagem
+                            <input type="file" accept="image/*" onchange="handleImageUpload(event, 'left')" class="hidden">
+                        </label>
+                    </div>
+
+                    <!-- Right Image -->
+                    <div class="flex flex-col gap-1.5">
+                        <label class="text-[11px] font-bold uppercase tracking-wider text-stone-300">Direita (Presidência):</label>
+                        <label class="bg-stone-950 hover:bg-stone-800 border border-stone-700 hover:border-amber-400 text-stone-200 text-xs font-semibold px-3 py-2.5 rounded-xl cursor-pointer transition flex items-center justify-center gap-2 text-center">
+                            <i class="fa-solid fa-cloud-arrow-up text-amber-400"></i> Carregar Imagem
+                            <input type="file" accept="image/*" onchange="handleImageUpload(event, 'right')" class="hidden">
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Theme Selector -->
+                <div class="border-t border-stone-800/80 pt-3 mt-1 flex flex-col gap-2">
+                    <span class="text-xs font-bold text-stone-300 flex items-center justify-between">
+                        <span><i class="fa-solid fa-fill-drip text-red-500 mr-1.5"></i> Tema de Fundo:</span>
+                        <span id="theme-name-display" class="text-[11px] text-amber-400 font-extrabold uppercase">Oficial</span>
+                    </span>
+                    <div class="grid grid-cols-5 gap-2">
+                        <button onclick="changeBg('oficial')" id="theme-btn-oficial" class="flex flex-col items-center gap-1 p-2 rounded-xl border-2 transition cursor-pointer border-amber-400 bg-stone-950" title="Tema Oficial (Bordô)">
+                            <div class="w-full h-6 rounded-lg bg-gradient-to-r from-[#3b020d] to-[#120004] border border-white/20"></div>
+                            <span class="text-[10px] font-bold text-stone-200">Oficial</span>
+                        </button>
+                        <button onclick="changeBg('lilas')" id="theme-btn-lilas" class="flex flex-col items-center gap-1 p-2 rounded-xl border-2 transition cursor-pointer border-stone-800 hover:border-stone-600 bg-stone-950" title="Tema Lilás">
+                            <div class="w-full h-6 rounded-lg bg-gradient-to-r from-[#3d1b54] to-[#180826] border border-white/20"></div>
+                            <span class="text-[10px] font-bold text-stone-200">Lilás</span>
+                        </button>
+                        <button onclick="changeBg('rosa')" id="theme-btn-rosa" class="flex flex-col items-center gap-1 p-2 rounded-xl border-2 transition cursor-pointer border-stone-800 hover:border-stone-600 bg-stone-950" title="Tema Rosa">
+                            <div class="w-full h-6 rounded-lg bg-gradient-to-r from-[#5e0d39] to-[#240214] border border-white/20"></div>
+                            <span class="text-[10px] font-bold text-stone-200">Rosa</span>
+                        </button>
+                        <button onclick="changeBg('amarelo')" id="theme-btn-amarelo" class="flex flex-col items-center gap-1 p-2 rounded-xl border-2 transition cursor-pointer border-stone-800 hover:border-stone-600 bg-stone-950" title="Tema Amarelo">
+                            <div class="w-full h-6 rounded-lg bg-gradient-to-r from-[#594100] to-[#211800] border border-white/20"></div>
+                            <span class="text-[10px] font-bold text-stone-200">Amarelo</span>
+                        </button>
+                        <button onclick="changeBg('azul')" id="theme-btn-azul" class="flex flex-col items-center gap-1 p-2 rounded-xl border-2 transition cursor-pointer border-stone-800 hover:border-stone-600 bg-stone-950" title="Tema Azul">
+                            <div class="w-full h-6 rounded-lg bg-gradient-to-r from-[#092082] to-[#091545] border border-white/20"></div>
+                            <span class="text-[10px] font-bold text-stone-200">Azul</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Table Data Editor -->
+            <div class="bg-stone-900/80 p-5 rounded-3xl border border-stone-800 shadow-xl flex flex-col gap-4">
+                <div class="flex justify-between items-center border-b border-stone-800/80 pb-3">
+                    <div>
+                        <h2 class="text-sm md:text-base font-extrabold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-table-list text-red-500"></i> Tabela de Eventos & Agenda
+                        </h2>
+                        <p class="text-xs text-stone-400">Edite todas as colunas com suporte a múltiplas linhas</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="clearAllRows()" class="bg-stone-800 hover:bg-stone-700 text-stone-300 text-xs font-semibold px-3 py-1.5 rounded-xl transition cursor-pointer border border-stone-700">
+                            Limpar
+                        </button>
+                        <button onclick="addNewRow()" class="bg-red-600 hover:bg-red-500 text-white text-xs font-bold px-3 py-1.5 rounded-xl shadow transition flex items-center gap-1.5 cursor-pointer">
+                            <i class="fa-solid fa-plus"></i> Adicionar
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Editable Table with Textareas -->
+                <div class="overflow-x-auto max-h-[380px] overflow-y-auto rounded-2xl border border-stone-800 custom-scroll">
+                    <table class="w-full text-left text-xs border-collapse min-w-[550px]">
+                        <thead class="bg-stone-950 text-stone-400 sticky top-0 uppercase text-[10px] tracking-wider z-10 border-b border-stone-800">
+                            <tr>
+                                <th class="p-2.5 font-bold w-16">Data</th>
+                                <th class="p-2.5 font-bold">Nome do Evento</th>
+                                <th class="p-2.5 font-bold">Local</th>
+                                <th class="p-2.5 font-bold w-24">Horário</th>
+                                <th class="p-2.5 font-bold w-24">Resp.</th>
+                                <th class="p-2.5 font-bold text-center w-16">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="editor-table-body" class="divide-y divide-stone-800/60 bg-stone-900/40">
+                            <!-- JS Populated -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- Application Engine -->
+    <script>
+        // Default Agenda Dataset
+        const defaultAgendaData = [
+            { date: "13/10", eventName: "Caminhada da Vitória", location: "Oliveira Lima", time: "14h às 19h", responsible: "Drica" },
+            { date: "14/10\nTerça", eventName: "Plenária Popular e Diálogo com Lideranças Locais", location: "Rua Oliveira Lima, Centro", time: "14h às 19h", responsible: "Silvio & Equipe" },
+            { date: "14/10", eventName: "Bandeiraço e Panfletagem no Terminal", location: "Estação SA", time: "17h às 19h", responsible: "Douglas" },
+            { date: "15/10", eventName: "Reunião de Alinhamento Geral com Apoiadores", location: "Vila Luzita", time: "16h às 19h", responsible: "Márcio" },
+            { date: "16/10", eventName: "Comício Central de Encerramento da Campanha", location: "Estação SA", time: "17h às 19h", responsible: "Roberto" },
+            { date: "17/10", eventName: "Grande Carreata da Democracia", location: "Oliveira Lima", time: "10h/dia todo", responsible: "Silvio" }
+        ];
+
+        // Global State
+        let agendaData = JSON.parse(localStorage.getItem('agenda_data_items_v5')) || [...defaultAgendaData];
+        let base64ImgLeft = localStorage.getItem('agenda_img_left_b64') || null;
+        let base64ImgRight = localStorage.getItem('agenda_img_right_b64') || null;
+        let currentTheme = localStorage.getItem('agenda_card_theme_v5') || 'oficial';
+
+        let loadedImgLeft = new Image();
+        let loadedImgRight = new Image();
+        let isLeftImgLoaded = false;
+        let isRightImgLoaded = false;
+
+        function saveData() {
+            localStorage.setItem('agenda_data_items_v5', JSON.stringify(agendaData));
+            localStorage.setItem('agenda_card_theme_v5', currentTheme);
+        }
+
+        window.onload = function() {
+            document.fonts.ready.then(() => {
+                initImageObjects();
+                updateThemeUI();
+                renderEditorTable();
+                drawAgendaCanvas();
+            });
+        };
+
+        function initImageObjects() {
+            if (base64ImgLeft) {
+                loadedImgLeft.onload = () => { isLeftImgLoaded = true; drawAgendaCanvas(); };
+                loadedImgLeft.src = base64ImgLeft;
+            } else {
+                isLeftImgLoaded = false;
+            }
+
+            if (base64ImgRight) {
+                loadedImgRight.onload = () => { isRightImgLoaded = true; drawAgendaCanvas(); };
+                loadedImgRight.src = base64ImgRight;
+            } else {
+                isRightImgLoaded = false;
+            }
+        }
+
+        function handleImageUpload(event, side) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const base64Data = e.target.result;
+                if (side === 'left') {
+                    base64ImgLeft = base64Data;
+                    localStorage.setItem('agenda_img_left_b64', base64Data);
+                    loadedImgLeft = new Image();
+                    loadedImgLeft.onload = () => { isLeftImgLoaded = true; drawAgendaCanvas(); };
+                    loadedImgLeft.src = base64Data;
+                } else if (side === 'right') {
+                    base64ImgRight = base64Data;
+                    localStorage.setItem('agenda_img_right_b64', base64Data);
+                    loadedImgRight = new Image();
+                    loadedImgRight.onload = () => { isRightImgLoaded = true; drawAgendaCanvas(); };
+                    loadedImgRight.src = base64Data;
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // --- CANVAS RENDERING ENGINE ---
+        function drawAgendaCanvas() {
+            const canvas = document.getElementById('agendaCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            const W = 1080;
+            const H = 1380;
+            ctx.clearRect(0, 0, W, H);
+
+            // 1. Background Gradient per Theme
+            let bgGrad = ctx.createRadialGradient(W/2, H/2, 50, W/2, H/2, W * 0.75);
+
+            if (currentTheme === 'lilas') {
+                bgGrad.addColorStop(0, '#3d1b54');
+                bgGrad.addColorStop(0.65, '#240d34');
+                bgGrad.addColorStop(1, '#180826');
+            } else if (currentTheme === 'rosa') {
+                bgGrad.addColorStop(0, '#5e0d39');
+                bgGrad.addColorStop(0.65, '#3b0623');
+                bgGrad.addColorStop(1, '#240214');
+            } else if (currentTheme === 'amarelo') {
+                bgGrad.addColorStop(0, '#594100');
+                bgGrad.addColorStop(0.65, '#3b2b00');
+                bgGrad.addColorStop(1, '#211800');
+            } else if (currentTheme === 'azul') {
+                bgGrad.addColorStop(0, '#092082');
+                bgGrad.addColorStop(0.65, '#091545');
+                bgGrad.addColorStop(1, '#050b24');
+            } else {
+                // Oficial (Bordô)
+                bgGrad.addColorStop(0, '#3b020d');
+                bgGrad.addColorStop(0.65, '#240107');
+                bgGrad.addColorStop(1, '#120004');
+            }
+
+            ctx.fillStyle = bgGrad;
+            ctx.fillRect(0, 0, W, H);
+
+            // Subtle background glow
+            ctx.save();
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.035)';
+            ctx.beginPath();
+            ctx.arc(W/2, H/2, 430, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+
+            // 2. Header Images / Fallbacks
+            const headerY = 65;
+            const headerMaxH = 125;
+
+            if (isLeftImgLoaded && loadedImgLeft.complete && loadedImgLeft.naturalWidth !== 0) {
+                const aspect = loadedImgLeft.naturalWidth / loadedImgLeft.naturalHeight;
+                const drawH = headerMaxH;
+                const drawW = drawH * aspect;
+                ctx.drawImage(loadedImgLeft, 65, headerY, Math.min(drawW, 400), drawH);
+            } else {
+                drawStylizedHeaderBox(ctx, 65, headerY, 400, headerMaxH, "AGENDA DA SEMANA", "#10b981");
+            }
+
+            if (isRightImgLoaded && loadedImgRight.complete && loadedImgRight.naturalWidth !== 0) {
+                const aspect = loadedImgRight.naturalWidth / loadedImgRight.naturalHeight;
+                const drawH = headerMaxH;
+                const drawW = drawH * aspect;
+                ctx.drawImage(loadedImgRight, W - 65 - Math.min(drawW, 420), headerY, Math.min(drawW, 420), drawH);
+            } else {
+                drawStylizedHeaderBox(ctx, W - 465, headerY, 400, headerMaxH, "PRESIDENTE LULA", "#ef4444");
+            }
+
+            // 3. Agenda Rows Rendering
+            const itemCount = agendaData.length;
+            document.getElementById('item-count-badge').innerText = itemCount;
+
+            if (itemCount > 0) {
+                const startY = 225;
+                const availableHeight = 750;
+                
+                const itemHeight = Math.min(98, Math.max(62, Math.floor((availableHeight - (itemCount - 1) * 10) / itemCount)));
+                const rowGap = Math.min(12, Math.max(6, Math.floor((availableHeight - itemCount * itemHeight) / (itemCount + 1))));
+                
+                const cardX = 65;
+                const cardWidth = W - 130; // 950px total row width
+
+                agendaData.forEach((item, index) => {
+                    const currentY = startY + index * (itemHeight + rowGap);
+                    drawSingleAgendaRow(ctx, cardX, currentY, cardWidth, itemHeight, item);
+                });
+            } else {
+                ctx.save();
+                ctx.font = "bold 24px 'Montserrat', sans-serif";
+                ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
+                ctx.textAlign = "center";
+                ctx.fillText("Nenhum evento registrado na agenda.", W / 2, 540);
+                ctx.restore();
+            }
+
+            // 4. Footer
+            ctx.save();
+            ctx.strokeStyle = "rgba(255, 255, 255, 0.18)";
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(65, 1005);
+            ctx.lineTo(W - 65, 1005);
+            ctx.stroke();
+
+            // Left Footer Text
+            ctx.font = "bold 20px 'Montserrat', sans-serif";
+            ctx.fillStyle = "#f3f4f6";
+            ctx.textAlign = "left";
+            ctx.textBaseline = "middle";
+            ctx.fillText("📣  Acompanhe a agenda em Santo André", 70, 1335);
+
+            // Right Hashtag Badge
+            ctx.font = "900 20px 'Montserrat', sans-serif";
+            ctx.fillStyle = "#ffffff";
+            ctx.textAlign = "right";
+            ctx.fillText("#SantoAndreComLula", W - 70, 1335);
+            ctx.restore();
+        }
+
+        // Draw Single Row with 4 Columns - Full Multiline Support in Canvas
+        function drawSingleAgendaRow(ctx, x, y, width, height, item) {
+            ctx.save();
+
+            // Column Width Allocation
+            const dateW = Math.floor(width * 0.14);      // ~133px Date
+            const eventW = Math.floor(width * 0.32);     // ~304px Event Name
+            const respW = Math.floor(width * 0.22);      // ~209px Responsible
+            const mainW = width - dateW - eventW - respW; // ~304px Location & Time
+
+            const dateX = x;
+            const eventX = dateX + dateW;
+            const mainX = eventX + eventW;
+            const respX = mainX + mainW;
+
+            const radius = 14;
+
+            // -------------------------------------------------------------
+            // 1. GREEN DATE BADGE (MULTILINE)
+            // -------------------------------------------------------------
+            ctx.fillStyle = "#059669";
+            ctx.beginPath();
+            ctx.moveTo(dateX + radius, y);
+            ctx.lineTo(dateX + dateW, y);
+            ctx.lineTo(dateX + dateW, y + height);
+            ctx.lineTo(dateX + radius, y + height);
+            ctx.arcTo(dateX, y + height, dateX, y + height - radius, radius);
+            ctx.lineTo(dateX, y + radius);
+            ctx.arcTo(dateX, y, dateX + radius, y, radius);
+            ctx.closePath();
+            ctx.fill();
+
+            // Date Divider Line
+            ctx.strokeStyle = "rgba(0, 0, 0, 0.2)";
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(dateX + dateW, y);
+            ctx.lineTo(dateX + dateW, y + height);
+            ctx.stroke();
+
+            // Date Text Multiline Drawing
+            const dateFontSize = Math.round(height * 0.28);
+            ctx.font = `900 ${dateFontSize}px 'Montserrat', sans-serif`;
+            ctx.fillStyle = "#ffffff";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "top";
+
+            const dateLines = wrapText(ctx, item.date || "", dateW - 12, 3);
+            const dateLineH = dateFontSize * 1.1;
+            const dateTotalH = dateLines.length * dateLineH;
+            const dateStartY = y + (height - dateTotalH) / 2;
+
+            dateLines.forEach((dLine, idx) => {
+                ctx.fillText(dLine, dateX + dateW / 2, dateStartY + idx * dateLineH);
+            });
+
+            // -------------------------------------------------------------
+            // 2. EVENT NAME BLOCK (MULTILINE)
+            // -------------------------------------------------------------
+            ctx.fillStyle = "#0f172a"; // Deep Slate Dark
+            ctx.fillRect(eventX, y, eventW, height);
+
+            const eventFontSize = Math.round(height * 0.22);
+            ctx.font = `800 ${eventFontSize}px 'Montserrat', sans-serif`;
+            ctx.fillStyle = "#f8fafc";
+            ctx.textAlign = "left";
+            ctx.textBaseline = "top";
+
+            const eventLines = wrapText(ctx, item.eventName || "Evento", eventW - 20, 3);
+            const eventLineH = eventFontSize * 1.15;
+            const eventTotalH = eventLines.length * eventLineH;
+            const eventStartY = y + (height - eventTotalH) / 2;
+
+            eventLines.forEach((lineText, lineIdx) => {
+                ctx.fillText(lineText, eventX + 10, eventStartY + lineIdx * eventLineH);
+            });
+
+            // Divider Line
+            ctx.strokeStyle = "rgba(255, 255, 255, 0.15)";
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.moveTo(eventX + eventW, y);
+            ctx.lineTo(eventX + eventW, y + height);
+            ctx.stroke();
+
+            // -------------------------------------------------------------
+            // 3. YELLOW LOCATION & TIME BLOCK (MULTILINE)
+            // -------------------------------------------------------------
+            ctx.fillStyle = "#fbbf24"; // Official Yellow
+            ctx.fillRect(mainX, y, mainW, height);
+
+            const locW = mainW * 0.62;
+            const timeW = mainW - locW;
+
+            // Location Text Multiline (Left Area)
+            const locFontSize = Math.round(height * 0.21);
+            ctx.font = `900 ${locFontSize}px 'Montserrat', sans-serif`;
+            ctx.fillStyle = "#0f172a";
+            ctx.textAlign = "left";
+            ctx.textBaseline = "top";
+
+            const locLines = wrapText(ctx, item.location || "", locW - 14, 3);
+            const locLineH = locFontSize * 1.1;
+            const locTotalH = locLines.length * locLineH;
+            const locStartY = y + (height - locTotalH) / 2;
+
+            locLines.forEach((lineText, lineIdx) => {
+                ctx.fillText(lineText, mainX + 10, locStartY + lineIdx * locLineH);
+            });
+
+            // Yellow Divider Line between Local and Horário
+            ctx.strokeStyle = "rgba(180, 83, 9, 0.35)";
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.moveTo(mainX + locW, y + 8);
+            ctx.lineTo(mainX + locW, y + height - 8);
+            ctx.stroke();
+
+            // Time Text Multiline (Right Area)
+            const timeFontSize = Math.round(height * 0.20);
+            ctx.font = `700 ${timeFontSize}px 'Montserrat', sans-serif`;
+            ctx.fillStyle = "#1e293b";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "top";
+
+            const timeLines = wrapText(ctx, item.time || "", timeW - 8, 3);
+            const timeLineH = timeFontSize * 1.1;
+            const timeTotalH = timeLines.length * timeLineH;
+            const timeStartY = y + (height - timeTotalH) / 2;
+
+            timeLines.forEach((lineText, lineIdx) => {
+                ctx.fillText(lineText, mainX + locW + timeW / 2, timeStartY + lineIdx * timeLineH);
+            });
+
+            // -------------------------------------------------------------
+            // 4. BLUE RESPONSIBLE BADGE (MULTILINE)
+            // -------------------------------------------------------------
+            const respGrad = ctx.createLinearGradient(respX, y, respX + respW, y + height);
+            respGrad.addColorStop(0, '#1d4ed8');
+            respGrad.addColorStop(1, '#1e3a8a');
+            ctx.fillStyle = respGrad;
+
+            ctx.beginPath();
+            ctx.moveTo(respX, y);
+            ctx.lineTo(respX + respW - radius, y);
+            ctx.arcTo(respX + respW, y, respX + respW, y + radius, radius);
+            ctx.lineTo(respX + respW, y + height - radius);
+            ctx.arcTo(respX + respW, y + height, respX + respW - radius, y + height, radius);
+            ctx.lineTo(respX, y + height);
+            ctx.closePath();
+            ctx.fill();
+
+            // Label "RESPONSÁVEL:"
+            const respLabelSize = Math.round(height * 0.15);
+            ctx.font = `800 ${respLabelSize}px 'Montserrat', sans-serif`;
+            ctx.fillStyle = "#93c5fd";
+            ctx.textAlign = "left";
+            ctx.textBaseline = "top";
+            ctx.fillText("RESPONSÁVEL:", respX + 10, y + 6);
+
+            // Responsible Name Multiline Text
+            const respNameSize = Math.round(height * 0.22);
+            ctx.font = `900 ${respNameSize}px 'Montserrat', sans-serif`;
+            ctx.fillStyle = "#ffffff";
+            ctx.textAlign = "left";
+            ctx.textBaseline = "top";
+
+            const respLines = wrapText(ctx, item.responsible || "", respW - 16, 2);
+            const respLineH = respNameSize * 1.1;
+            const respTotalH = respLines.length * respLineH;
+            const respStartY = y + 6 + respLabelSize + (height - 12 - respLabelSize - respTotalH) / 2;
+
+            respLines.forEach((rLine, idx) => {
+                ctx.fillText(rLine, respX + 10, respStartY + idx * respLineH);
+            });
+
+            ctx.restore();
+        }
+
+        // Generic Canvas Multiline Text Wrapping Utility
+        function wrapText(ctx, text, maxWidth, maxLines = 3) {
+            if (!text) return [""];
+            const words = text.replace(/\n/g, " \n ").split(' ');
+            let lines = [];
+            let currentLine = "";
+
+            for (let i = 0; i < words.length; i++) {
+                let word = words[i];
+
+                if (word === "\n") {
+                    lines.push(currentLine.trim());
+                    currentLine = "";
+                    continue;
+                }
+
+                let testLine = currentLine === "" ? word : currentLine + " " + word;
+                let width = ctx.measureText(testLine).width;
+
+                if (width <= maxWidth) {
+                    currentLine = testLine;
+                } else {
+                    if (currentLine !== "") lines.push(currentLine.trim());
+                    currentLine = word;
+                }
+            }
+            if (currentLine !== "") lines.push(currentLine.trim());
+
+            if (lines.length > maxLines) {
+                lines = lines.slice(0, maxLines);
+                let lastLine = lines[maxLines - 1];
+                while (lastLine.length > 0 && ctx.measureText(lastLine + "…").width > maxWidth) {
+                    lastLine = lastLine.slice(0, -1);
+                }
+                lines[maxLines - 1] = lastLine.trim() + "…";
+            }
+            return lines;
+        }
+
+        function drawStylizedHeaderBox(ctx, x, y, w, h, title, color) {
+            ctx.save();
+            ctx.fillStyle = "rgba(0, 0, 0, 0.35)";
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.roundRect(x, y, w, h, 18);
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.font = "900 22px 'Montserrat', sans-serif";
+            ctx.fillStyle = "#ffffff";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText(title, x + w / 2, y + h / 2);
+            ctx.restore();
+        }
+
+        // --- THEME SWITCHER ---
+        function changeBg(theme) {
+            currentTheme = theme;
+            saveData();
+            updateThemeUI();
+            drawAgendaCanvas();
+        }
+
+        function updateThemeUI() {
+            const themes = ['oficial', 'lilas', 'rosa', 'amarelo', 'azul'];
+            const names = {
+                'oficial': 'Oficial (Bordô)',
+                'lilas': 'Lilás',
+                'rosa': 'Rosa',
+                'amarelo': 'Amarelo',
+                'azul': 'Azul'
+            };
+
+            themes.forEach(t => {
+                const btn = document.getElementById(`theme-btn-${t}`);
+                if (btn) {
+                    if (t === currentTheme) {
+                        btn.classList.remove('border-stone-800', 'hover:border-stone-600');
+                        btn.classList.add('border-amber-400', 'ring-2', 'ring-amber-400/30');
+                    } else {
+                        btn.classList.remove('border-amber-400', 'ring-2', 'ring-amber-400/30');
+                        btn.classList.add('border-stone-800', 'hover:border-stone-600');
+                    }
+                }
+            });
+
+            document.getElementById('theme-name-display').innerText = names[currentTheme] || currentTheme;
+        }
+
+        // --- EDITABLE TABLE CONTROLS (TEXTAREAS FOR ALL FIELDS) ---
+        function renderEditorTable() {
+            const tbody = document.getElementById('editor-table-body');
+            tbody.innerHTML = '';
+
+            agendaData.forEach((item, index) => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-stone-800/50 transition border-b border-stone-800/40";
+                tr.innerHTML = `
+                    <td class="p-1.5">
+                        <textarea rows="2" oninput="updateItem(${index}, 'date', this.value)" class="w-16 bg-stone-950 text-stone-100 px-2 py-1 text-xs rounded-lg border border-stone-800 focus:border-red-500 focus:outline-none font-bold resize-none custom-scroll">${escapeHtml(item.date || '')}</textarea>
+                    </td>
+                    <td class="p-1.5">
+                        <textarea rows="2" oninput="updateItem(${index}, 'eventName', this.value)" class="w-full bg-stone-950 text-stone-100 px-2 py-1 text-xs rounded-lg border border-stone-800 focus:border-red-500 focus:outline-none font-semibold resize-none custom-scroll">${escapeHtml(item.eventName || '')}</textarea>
+                    </td>
+                    <td class="p-1.5">
+                        <textarea rows="2" oninput="updateItem(${index}, 'location', this.value)" class="w-full bg-stone-950 text-stone-100 px-2 py-1 text-xs rounded-lg border border-stone-800 focus:border-red-500 focus:outline-none font-semibold resize-none custom-scroll">${escapeHtml(item.location || '')}</textarea>
+                    </td>
+                    <td class="p-1.5">
+                        <textarea rows="2" oninput="updateItem(${index}, 'time', this.value)" class="w-24 bg-stone-950 text-stone-100 px-2 py-1 text-xs rounded-lg border border-stone-800 focus:border-red-500 focus:outline-none font-semibold resize-none custom-scroll">${escapeHtml(item.time || '')}</textarea>
+                    </td>
+                    <td class="p-1.5">
+                        <textarea rows="2" oninput="updateItem(${index}, 'responsible', this.value)" class="w-24 bg-stone-950 text-stone-100 px-2 py-1 text-xs rounded-lg border border-stone-800 focus:border-red-500 focus:outline-none font-semibold resize-none custom-scroll">${escapeHtml(item.responsible || '')}</textarea>
+                    </td>
+                    <td class="p-1.5 text-center">
+                        <div class="flex items-center justify-center gap-1">
+                            <button onclick="moveRow(${index}, -1)" title="Mover para cima" ${index === 0 ? 'disabled class="opacity-20 text-stone-600 p-1"' : 'class="text-stone-400 hover:text-white p-1 cursor-pointer"'}>
+                                <i class="fa-solid fa-chevron-up text-xs"></i>
+                            </button>
+                            <button onclick="moveRow(${index}, 1)" title="Mover para baixo" ${index === agendaData.length - 1 ? 'disabled class="opacity-20 text-stone-600 p-1"' : 'class="text-stone-400 hover:text-white p-1 cursor-pointer"'}>
+                                <i class="fa-solid fa-chevron-down text-xs"></i>
+                            </button>
+                            <button onclick="deleteRow(${index})" title="Eliminar" class="text-red-500 hover:text-red-400 p-1.5 cursor-pointer">
+                                <i class="fa-solid fa-trash-can text-xs"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function updateItem(index, field, value) {
+            agendaData[index][field] = value;
+            saveData();
+            drawAgendaCanvas();
+        }
+
+        function addNewRow() {
+            agendaData.push({ date: "18/10", eventName: "Novo Evento Oficial", location: "Novo Local", time: "14h às 18h", responsible: "Equipe" });
+            saveData();
+            renderEditorTable();
+            drawAgendaCanvas();
+        }
+
+        function deleteRow(index) {
+            agendaData.splice(index, 1);
+            saveData();
+            renderEditorTable();
+            drawAgendaCanvas();
+        }
+
+        function clearAllRows() {
+            agendaData = [];
+            saveData();
+            renderEditorTable();
+            drawAgendaCanvas();
+        }
+
+        function moveRow(index, direction) {
+            const newIndex = index + direction;
+            if (newIndex < 0 || newIndex >= agendaData.length) return;
+            const temp = agendaData[index];
+            agendaData[index] = agendaData[newIndex];
+            agendaData[newIndex] = temp;
+            saveData();
+            renderEditorTable();
+            drawAgendaCanvas();
+        }
+
+        function resetData() {
+            agendaData = [...defaultAgendaData];
+            base64ImgLeft = null;
+            base64ImgRight = null;
+            currentTheme = 'oficial';
+            isLeftImgLoaded = false;
+            isRightImgLoaded = false;
+            localStorage.removeItem('agenda_img_left_b64');
+            localStorage.removeItem('agenda_img_right_b64');
+            saveData();
+            updateThemeUI();
+            renderEditorTable();
+            drawAgendaCanvas();
+        }
+
+        function escapeHtml(str) {
+            return str ? str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;") : "";
+        }
+
+        function downloadCanvasPNG() {
+            const canvas = document.getElementById('agendaCanvas');
+            const btn = document.getElementById('btn-download');
+            const originalText = btn.innerHTML;
+
+            btn.innerHTML = `<i class="fa-solid fa-circle-notch animate-spin"></i> A Gerar PNG...`;
+            btn.disabled = true;
+
+            setTimeout(() => {
+                const link = document.createElement('a');
+                link.download = `agenda-oficial-${currentTheme}-${new Date().toISOString().slice(0, 10)}.png`;
+                link.href = canvas.toDataURL('image/png', 1.0);
+                link.click();
+
+                btn.innerHTML = `<i class="fa-solid fa-check"></i> Transferido com Sucesso!`;
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }, 2000);
+            }, 100);
+        }
+    </script>
+</body>
+</html>
