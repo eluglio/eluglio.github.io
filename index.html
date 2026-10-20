@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerador de Agenda Oficial - Colunas Multilinha & Canvas HD</title>
+    <title>Gerador de Agenda</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome Icons -->
@@ -43,9 +43,8 @@
                 </div>
                 <div>
                     <h1 class="text-lg md:text-xl font-black tracking-tight text-white flex items-center gap-2">
-                        Gerador de Agenda Oficial <span class="bg-red-600/30 text-red-400 text-[10px] uppercase px-2 py-0.5 rounded-full font-bold border border-red-500/30">Multilinha Completo</span>
+                        Gerador de Agenda
                     </h1>
-                    <p class="text-xs text-stone-400">Layout Canvas HD (1080x1380) com quebra de linha em todas as colunas</p>
                 </div>
             </div>
             <div class="flex items-center gap-3">
@@ -65,9 +64,6 @@
         <!-- Left Column: Canvas Preview -->
         <section class="lg:col-span-6 flex flex-col items-center">
             <div class="w-full flex justify-between items-center mb-3 px-1">
-                <span class="text-xs font-bold tracking-wider text-stone-400 uppercase flex items-center gap-1.5">
-                    <i class="fa-solid fa-circle-check text-emerald-500"></i> Canvas HD Nativo (1080 x 1380 px)
-                </span>
                 <span class="text-xs bg-stone-900 text-stone-300 px-3 py-1 rounded-full font-bold border border-stone-800">
                     <span id="item-count-badge" class="text-amber-400">0</span> compromissos
                 </span>
@@ -77,10 +73,6 @@
             <div class="w-full max-w-[580px] bg-stone-900 p-2 md:p-3 rounded-3xl border border-stone-800 shadow-2xl relative overflow-hidden flex justify-center items-center">
                 <canvas id="agendaCanvas" width="1080" height="1380" class="w-full h-auto rounded-2xl shadow-inner border border-white/5 bg-black block cursor-pointer" title="Clique no botão de download para gerar o PNG de alta resolução"></canvas>
             </div>
-            <p class="text-[11px] text-stone-500 mt-2 text-center">
-                <i class="fa-solid fa-shield-halved text-amber-500/80 mr-1"></i>
-                Suporte nativo a texto multilinha em todas as colunas (Data, Evento, Local, Horário e Responsável).
-            </p>
         </section>
 
         <!-- Right Column: Controls & Data Editor -->
@@ -166,7 +158,7 @@
                 </div>
 
                 <!-- Editable Table with Textareas -->
-                <div class="overflow-x-auto max-h-[380px] overflow-y-auto rounded-2xl border border-stone-800 custom-scroll">
+                <div class="overflow-x-auto max-h-[300px] overflow-y-auto rounded-2xl border border-stone-800 custom-scroll">
                     <table class="w-full text-left text-xs border-collapse min-w-[550px]">
                         <thead class="bg-stone-950 text-stone-400 sticky top-0 uppercase text-[10px] tracking-wider z-10 border-b border-stone-800">
                             <tr>
@@ -182,6 +174,17 @@
                             <!-- JS Populated -->
                         </tbody>
                     </table>
+                </div>
+
+                <div class="flex items-center gap-3">
+                    <!-- NOVO BOTÃO EXPORTAR CSV -->
+                    <button onclick="exportToCSV()" id="btn-export-csv" class="bg-blue-600 hover:bg-blue-500 text-white text-xs md:text-sm font-extrabold px-4 py-2.5 rounded-xl shadow-lg shadow-blue-950/50 transition flex items-center gap-2 cursor-pointer active:scale-95">
+                        <i class="fa-solid fa-file-csv text-base"></i> Baixar CSV
+                    </button>
+                    <label class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs md:text-sm font-extrabold px-4 py-2.5 rounded-xl shadow-lg shadow-indigo-950/50 transition flex items-center gap-2 cursor-pointer active:scale-95">
+                        <i class="fa-solid fa-file-upload text-base"></i> Importar CSV
+                        <input type="file" id="csv-file-input" accept=".csv" onchange="importFromCSV(event)" class="hidden">
+                    </label>
                 </div>
             </div>
 
@@ -366,8 +369,8 @@
             ctx.strokeStyle = "rgba(255, 255, 255, 0.18)";
             ctx.lineWidth = 1;
             ctx.beginPath();
-            ctx.moveTo(65, 1005);
-            ctx.lineTo(W - 65, 1005);
+            ctx.moveTo(65, 1305);
+            ctx.lineTo(W - 65, 1305);
             ctx.stroke();
 
             // Left Footer Text
@@ -774,6 +777,135 @@
                     btn.disabled = false;
                 }, 2000);
             }, 100);
+        }
+        // --- FUNÇÃO PARA EXPORTAR AGENDA PARA CSV ---
+        function exportToCSV() {
+            if (!agendaData || agendaData.length === 0) {
+                alert("A lista de compromissos está vazia!");
+                return;
+            }
+
+            // Cabeçalhos das colunas
+            const headers = ["Data", "Nome do Evento", "Local", "Horario", "Responsavel"];
+            
+            // Converte os itens para linhas do CSV com escape para aspas e quebras de linha
+            const rows = agendaData.map(item => [
+                `"${(item.date || '').replace(/"/g, '""')}"`,
+                `"${(item.eventName || '').replace(/"/g, '""')}"`,
+                `"${(item.location || '').replace(/"/g, '""')}"`,
+                `"${(item.time || '').replace(/"/g, '""')}"`,
+                `"${(item.responsible || '').replace(/"/g, '""')}"`
+            ]);
+
+            // Junta o cabeçalho e os dados usando vírgula (ou ponto e vírgula se preferir)
+            const csvContent = [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
+
+            // Adiciona o BOM (\uFEFF) para garantir suporte correto a acentuação e UTF-8 no Excel
+            const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
+            const url = URL.createObjectURL(blob);
+
+            // Cria o link invisível e força o download
+            const link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", `agenda-compromissos-${new Date().toISOString().slice(0, 10)}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+
+        // --- FUNÇÃO PARA IMPORTAR/LER ARQUIVO CSV ---
+        function importFromCSV(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const text = e.target.result;
+                const parsedData = parseCSV(text);
+
+                if (parsedData.length === 0) {
+                    alert("Nenhum dado válido encontrado no arquivo CSV.");
+                    return;
+                }
+
+                // Atualiza os dados globais
+                agendaData = parsedData;
+
+                // Salva e atualiza interface e canvas
+                saveData();
+                renderEditorTable();
+                drawAgendaCanvas();
+
+                // Limpa a seleção do input para permitir carregar o mesmo arquivo novamente se necessário
+                event.target.value = '';
+            };
+
+            reader.readAsText(file, 'UTF-8');
+        }
+
+        // --- PARSER DE CSV (SUPORTA ASPAS E QUEBRAS DE LINHA) ---
+        function parseCSV(text) {
+            // Remove o BOM se existir
+            if (text.charCodeAt(0) === 0xFEFF) {
+                text = text.slice(1);
+            }
+
+            const lines = [];
+            let row = [];
+            let inQuotes = false;
+            let currentValue = '';
+
+            for (let i = 0; i < text.length; i++) {
+                const char = text[i];
+                const nextChar = text[i + 1];
+
+                if (char === '"') {
+                    if (inQuotes && nextChar === '"') {
+                        currentValue += '"';
+                        i++; // Pula a aspa escapada
+                    } else {
+                        inQuotes = !inQuotes;
+                    }
+                } else if ((char === ',' || char === ';') && !inQuotes) {
+                    row.push(currentValue.trim());
+                    currentValue = '';
+                } else if ((char === '\r' || char === '\n') && !inQuotes) {
+                    if (char === '\r' && nextChar === '\n') {
+                        i++; // Pula o \n do \r\n
+                    }
+                    row.push(currentValue.trim());
+                    if (row.some(val => val !== '')) {
+                        lines.push(row);
+                    }
+                    row = [];
+                    currentValue = '';
+                } else {
+                    currentValue += char;
+                }
+            }
+
+            if (currentValue !== '' || row.length > 0) {
+                row.push(currentValue.trim());
+                if (row.some(val => val !== '')) {
+                    lines.push(row);
+                }
+            }
+
+            if (lines.length < 2) return []; // Precisa ter pelo menos cabeçalho + 1 linha
+
+            // Descarta o cabeçalho (primeira linha) e converte para objetos
+            const dataRows = lines.slice(1);
+            
+            return dataRows.map(columns => {
+                return {
+                    date: columns[0] || "",
+                    eventName: columns[1] || "",
+                    location: columns[2] || "",
+                    time: columns[3] || "",
+                    responsible: columns[4] || ""
+                };
+            });
         }
     </script>
 </body>
