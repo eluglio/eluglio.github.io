@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Agenda</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Montserrat & Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Montserrat:ital,wght@0,700;0,800;0,900;1,900&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-stone-950 text-stone-100 min-h-screen flex flex-col antialiased">
+
+    <!-- Header / Navbar -->
+    <header class="bg-stone-900/90 backdrop-blur border-b border-stone-800 sticky top-0 z-50 py-3.5 px-4 md:px-8 shadow-xl">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="bg-gradient-to-br from-red-600 to-red-700 text-white p-2.5 rounded-2xl shadow-lg shadow-red-900/30">
+                    <i class="fa-solid fa-calendar-days text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg md:text-xl font-black tracking-tight text-white flex items-center gap-2">
+                        Gerador de Agenda
+                    </h1>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <button onclick="downloadCanvasPNG()" id="btn-download" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs md:text-sm font-extrabold px-5 py-2.5 rounded-xl shadow-lg shadow-emerald-950/50 transition flex items-center gap-2 cursor-pointer active:scale-95">
+                    <i class="fa-solid fa-download"></i> Baixar Card PNG (HD)
+                </button>
+                <button onclick="resetData()" class="bg-stone-800 hover:bg-stone-700 text-stone-300 text-xs md:text-sm font-semibold px-4 py-2.5 rounded-xl border border-stone-700 transition flex items-center gap-2 cursor-pointer">
+                    <i class="fa-solid fa-rotate-right"></i> Restaurar
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Workspace Layout -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        
+        <!-- Left Column: Canvas Preview -->
+        <section class="lg:col-span-6 flex flex-col items-center">
+            <div class="w-full flex justify-between items-center mb-3 px-1">
+                <span class="text-xs bg-stone-900 text-stone-300 px-3 py-1 rounded-full font-bold border border-stone-800">
+                    <span id="item-count-badge" class="text-amber-400">0</span> compromissos
+                </span>
+            </div>
+
+            <!-- Canvas Wrapper -->
+            <div class="w-full max-w-[580px] bg-stone-900 p-6 rounded-3xl border border-stone-800 shadow-2xl relative flex justify-center items-center">
+                <div id="canvasBox">
+                    <canvas id="agendaCanvas" width="1080" height="1380" class="rounded-2xl shadow-inner border border-white/5 bg-black cursor-pointer" title="Clique no botão de download para gerar o PNG de alta resolução"></canvas>
+
+                    <!-- Alças de redimensionamento -->
+                    <div class="resize-handle handle-n" data-dir="n"></div>
+                    <div class="resize-handle handle-s" data-dir="s"></div>
+                    <div class="resize-handle handle-e" data-dir="e"></div>
+                    <div class="resize-handle handle-w" data-dir="w"></div>
+                    <div class="resize-handle handle-ne" data-dir="ne"></div>
+                    <div class="resize-handle handle-nw" data-dir="nw"></div>
+                    <div class="resize-handle handle-se" data-dir="se"></div>
+                    <div class="resize-handle handle-sw" data-dir="sw"></div>
+                </div>
+            </div>
+            <p class="text-[11px] text-stone-500 mt-2.5 text-center flex items-center justify-center gap-1.5">
+                <i class="fa-solid fa-arrows-up-down-left-right"></i>
+                Arraste as bordas ou cantos para alterar o tamanho real da imagem gerada
+                <button onclick="resetCanvasBoxSize()" class="ml-1 text-amber-400 hover:text-amber-300 underline underline-offset-2 cursor-pointer">Redefinir</button>
+            </p>
+        </section>
+
+        <!-- Right Column: Controls & Data Editor -->
+        <section class="lg:col-span-6 flex flex-col gap-5">
+            
+            <!-- Header Images & Background Themes -->
+            <div class="bg-stone-900/80 p-5 rounded-3xl border border-stone-800 shadow-xl flex flex-col gap-4">
+                <div>
+                    <h2 class="text-sm md:text-base font-extrabold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-image text-amber-400"></i> Imagens de Cabeçalho & Tema
+                    </h2>
+                    <p class="text-xs text-stone-400 mt-0.5">Carregue logos transparentes e escolha a cor de fundo do card</p>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <!-- Left Image -->
+                    <div class="flex flex-col gap-1.5">
+                        <label class="text-[11px] font-bold uppercase tracking-wider text-stone-300">Esquerda (Agenda):</label>
+                        <label class="bg-stone-950 hover:bg-stone-800 border border-stone-700 hover:border-amber-400 text-stone-200 text-xs font-semibold px-3 py-2.5 rounded-xl cursor-pointer transition flex items-center justify-center gap-2 text-center">
+                            <i class="fa-solid fa-cloud-arrow-up text-amber-400"></i> Carregar Imagem
+                            <input type="file" accept="image/*" onchange="handleImageUpload(event, 'left')" class="hidden">
+                        </label>
+                    </div>
+
+                    <!-- Right Image -->
+                    <div class="flex flex-col gap-1.5">
+                        <label class="text-[11px] font-bold uppercase tracking-wider text-stone-300">Direita (Presidência):</label>
+                        <label class="bg-stone-950 hover:bg-stone-800 border border-stone-700 hover:border-amber-400 text-stone-200 text-xs font-semibold px-3 py-2.5 rounded-xl cursor-pointer transition flex items-center justify-center gap-2 text-center">
+                            <i class="fa-solid fa-cloud-arrow-up text-amber-400"></i> Carregar Imagem
+                            <input type="file" accept="image/*" onchange="handleImageUpload(event, 'right')" class="hidden">
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Theme Selector -->
+                <div class="border-t border-stone-800/80 pt-3 mt-1 flex flex-col gap-2">
+                    <span class="text-xs font-bold text-stone-300 flex items-center justify-between">
+                        <span><i class="fa-solid fa-fill-drip text-red-500 mr-1.5"></i> Tema de Fundo:</span>
+                        <span id="theme-name-display" class="text-[11px] text-amber-400 font-extrabold uppercase">Oficial</span>
+                    </span>
+                    <div class="grid grid-cols-5 gap-2">
+                        <button onclick="changeBg('oficial')" id="theme-btn-oficial" class="flex flex-col items-center gap-1 p-2 rounded-xl border-2 transition cursor-pointer border-amber-400 bg-stone-950" title="Tema Oficial (Bordô)">
+                            <div class="w-full h-6 rounded-lg bg-gradient-to-r from-[#3b020d] to-[#120004] border border-white/20"></div>
+                            <span class="text-[10px] font-bold text-stone-200">Oficial</span>
+                        </button>
+                        <button onclick="changeBg('lilas')" id="theme-btn-lilas" class="flex flex-col items-center gap-1 p-2 rounded-xl border-2 transition cursor-pointer border-stone-800 hover:border-stone-600 bg-stone-950" title="Tema Lilás">
+                            <div class="w-full h-6 rounded-lg bg-gradient-to-r from-[#3d1b54] to-[#180826] border border-white/20"></div>
+                            <span class="text-[10px] font-bold text-stone-200">Lilás</span>
+                        </button>
+                        <button onclick="changeBg('rosa')" id="theme-btn-rosa" class="flex flex-col items-center gap-1 p-2 rounded-xl border-2 transition cursor-pointer border-stone-800 hover:border-stone-600 bg-stone-950" title="Tema Rosa">
+                            <div class="w-full h-6 rounded-lg bg-gradient-to-r from-[#5e0d39] to-[#240214] border border-white/20"></div>
+                            <span class="text-[10px] font-bold text-stone-200">Rosa</span>
+                        </button>
+                        <button onclick="changeBg('amarelo')" id="theme-btn-amarelo" class="flex flex-col items-center gap-1 p-2 rounded-xl border-2 transition cursor-pointer border-stone-800 hover:border-stone-600 bg-stone-950" title="Tema Amarelo">
+                            <div class="w-full h-6 rounded-lg bg-gradient-to-r from-[#594100] to-[#211800] border border-white/20"></div>
+                            <span class="text-[10px] font-bold text-stone-200">Amarelo</span>
+                        </button>
+                        <button onclick="changeBg('azul')" id="theme-btn-azul" class="flex flex-col items-center gap-1 p-2 rounded-xl border-2 transition cursor-pointer border-stone-800 hover:border-stone-600 bg-stone-950" title="Tema Azul">
+                            <div class="w-full h-6 rounded-lg bg-gradient-to-r from-[#092082] to-[#091545] border border-white/20"></div>
+                            <span class="text-[10px] font-bold text-stone-200">Azul</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Size Presets for Social Media -->
+                <div class="border-t border-stone-800/80 pt-3 mt-1 flex flex-col gap-2">
+                    <span class="text-xs font-bold text-stone-300 flex items-center justify-between">
+                        <span><i class="fa-solid fa-expand text-emerald-400 mr-1.5"></i> Tamanho para Redes Sociais:</span>
+                        <span id="preset-size-display" class="text-[11px] text-stone-500 font-mono">1080 × 1380</span>
+                    </span>
+                    <div class="grid grid-cols-3 gap-2">
+                        <button onclick="applyCanvasPreset('ig_feed')" id="preset-btn-ig_feed" class="flex flex-col items-center gap-1 p-2 rounded-xl border-2 transition cursor-pointer border-stone-800 hover:border-stone-600 bg-stone-950" title="Instagram Feed (1080×1350)">
+                            <div class="preset-swatch" style="aspect-ratio: 1080 / 1350;"></div>
+                            <span class="text-[10px] font-bold text-stone-200 text-center leading-tight">Instagram Feed</span>
+                            <span class="text-[9px] text-stone-500">1080×1350</span>
+                        </button>
+                        <button onclick="applyCanvasPreset('ig_square')" id="preset-btn-ig_square" class="flex flex-col items-center gap-1 p-2 rounded-xl border-2 transition cursor-pointer border-stone-800 hover:border-stone-600 bg-stone-950" title="Instagram Quadrado (1080×1080)">
+                            <div class="preset-swatch" style="aspect-ratio: 1 / 1;"></div>
+                            <span class="text-[10px] font-bold text-stone-200 text-center leading-tight">Quadrado</span>
+                            <span class="text-[9px] text-stone-500">1080×1080</span>
+                        </button>
+                        <button onclick="applyCanvasPreset('ig_story')" id="preset-btn-ig_story" class="flex flex-col items-center gap-1 p-2 rounded-xl border-2 transition cursor-pointer border-stone-800 hover:border-stone-600 bg-stone-950" title="Stories / Reels (1080×1920)">
+                            <div class="preset-swatch" style="aspect-ratio: 1080 / 1920;"></div>
+                            <span class="text-[10px] font-bold text-stone-200 text-center leading-tight">Stories / Reels</span>
+                            <span class="text-[9px] text-stone-500">1080×1920</span>
+                        </button>
+                        <button onclick="applyCanvasPreset('whatsapp')" id="preset-btn-whatsapp" class="flex flex-col items-center gap-1 p-2 rounded-xl border-2 transition cursor-pointer border-stone-800 hover:border-stone-600 bg-stone-950" title="Status do WhatsApp (1080×1920)">
+                            <div class="preset-swatch" style="aspect-ratio: 1080 / 1920;"></div>
+                            <span class="text-[10px] font-bold text-stone-200 text-center leading-tight">Status WhatsApp</span>
+                            <span class="text-[9px] text-stone-500">1080×1920</span>
+                        </button>
+                        <button onclick="applyCanvasPreset('facebook')" id="preset-btn-facebook" class="flex flex-col items-center gap-1 p-2 rounded-xl border-2 transition cursor-pointer border-stone-800 hover:border-stone-600 bg-stone-950" title="Post do Facebook (1200×630)">
+                            <div class="preset-swatch" style="aspect-ratio: 1200 / 630;"></div>
+                            <span class="text-[10px] font-bold text-stone-200 text-center leading-tight">Facebook Post</span>
+                            <span class="text-[9px] text-stone-500">1200×630</span>
+                        </button>
+                        <button onclick="applyCanvasPreset('twitter')" id="preset-btn-twitter" class="flex flex-col items-center gap-1 p-2 rounded-xl border-2 transition cursor-pointer border-stone-800 hover:border-stone-600 bg-stone-950" title="X / Twitter (1600×900)">
+                            <div class="preset-swatch" style="aspect-ratio: 1600 / 900;"></div>
+                            <span class="text-[10px] font-bold text-stone-200 text-center leading-tight">X (Twitter)</span>
+                            <span class="text-[9px] text-stone-500">1600×900</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Table Data Editor -->
+            <div class="bg-stone-900/80 p-5 rounded-3xl border border-stone-800 shadow-xl flex flex-col gap-4">
+                <div class="flex justify-between items-center border-b border-stone-800/80 pb-3">
+                    <div>
+                        <h2 class="text-sm md:text-base font-extrabold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-table-list text-red-500"></i> Tabela de Eventos & Agenda
+                        </h2>
+                        <p class="text-xs text-stone-400">Edite todas as colunas com suporte a múltiplas linhas</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="clearAllRows()" class="bg-stone-800 hover:bg-stone-700 text-stone-300 text-xs font-semibold px-3 py-1.5 rounded-xl transition cursor-pointer border border-stone-700">
+                            Limpar
+                        </button>
+                        <button onclick="addNewRow()" class="bg-red-600 hover:bg-red-500 text-white text-xs font-bold px-3 py-1.5 rounded-xl shadow transition flex items-center gap-1.5 cursor-pointer">
+                            <i class="fa-solid fa-plus"></i> Adicionar
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Editable Table with Textareas -->
+                <div class="overflow-x-auto max-h-[300px] overflow-y-auto rounded-2xl border border-stone-800 custom-scroll">
+                    <table class="w-full text-left text-xs border-collapse min-w-[550px]">
+                        <thead class="bg-stone-950 text-stone-400 sticky top-0 uppercase text-[10px] tracking-wider z-10 border-b border-stone-800">
+                            <tr>
+                                <th class="p-2.5 font-bold w-16">Data</th>
+                                <th class="p-2.5 font-bold">Nome do Evento</th>
+                                <th class="p-2.5 font-bold">Local</th>
+                                <th class="p-2.5 font-bold w-24">Horário</th>
+                                <th class="p-2.5 font-bold w-24">Resp.</th>
+                                <th class="p-2.5 font-bold text-center w-16">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="editor-table-body" class="divide-y divide-stone-800/60 bg-stone-900/40">
+                            <!-- JS Populated -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="flex items-center gap-3">
+                    <!-- NOVO BOTÃO EXPORTAR CSV -->
+                    <button onclick="exportToCSV()" id="btn-export-csv" class="bg-blue-600 hover:bg-blue-500 text-white text-xs md:text-sm font-extrabold px-4 py-2.5 rounded-xl shadow-lg shadow-blue-950/50 transition flex items-center gap-2 cursor-pointer active:scale-95">
+                        <i class="fa-solid fa-file-csv text-base"></i> Baixar CSV
+                    </button>
+                    <label class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs md:text-sm font-extrabold px-4 py-2.5 rounded-xl shadow-lg shadow-indigo-950/50 transition flex items-center gap-2 cursor-pointer active:scale-95">
+                        <i class="fa-solid fa-file-upload text-base"></i> Importar CSV
+                        <input type="file" id="csv-file-input" accept=".csv" onchange="importFromCSV(event)" class="hidden">
+                    </label>
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- Application Engine -->
+    <script src="script.js"></script>
+</body>
+</html>

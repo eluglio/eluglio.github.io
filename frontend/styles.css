@@ -1,0 +1,77 @@
+body {
+    font-family: 'Montserrat', 'Inter', sans-serif;
+}
+/* Custom scrollbar styling */
+.custom-scroll::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+.custom-scroll::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+}
+.custom-scroll::-webkit-scrollbar-thumb {
+    background: rgba(239, 68, 68, 0.5);
+    border-radius: 8px;
+}
+
+/* --- Redimensionamento do Card (drag and drop pelas bordas) --- */
+#canvasBox {
+    position: relative;
+    width: 100%;
+    max-width: 540px;
+    aspect-ratio: 1080 / 1380;
+    touch-action: none;
+}
+#canvasBox canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+.resize-handle {
+    position: absolute;
+    z-index: 20;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+}
+#canvasBox:hover .resize-handle,
+#canvasBox.is-resizing .resize-handle {
+    opacity: 1;
+}
+@media (pointer: coarse) {
+    .resize-handle { opacity: 0.85; }
+}
+.resize-handle::after {
+    content: '';
+    position: absolute;
+    background: #fbbf24; /* amber-400 */
+    border-radius: 4px;
+    box-shadow: 0 0 0 2px rgba(0,0,0,0.55);
+}
+.handle-n, .handle-s { left: 16px; right: 16px; height: 16px; cursor: ns-resize; }
+.handle-n { top: -8px; }
+.handle-s { bottom: -8px; }
+.handle-e, .handle-w { top: 16px; bottom: 16px; width: 16px; cursor: ew-resize; }
+.handle-e { right: -8px; }
+.handle-w { left: -8px; }
+.handle-ne, .handle-nw, .handle-se, .handle-sw { width: 20px; height: 20px; }
+.handle-ne { top: -10px; right: -10px; cursor: nesw-resize; }
+.handle-nw { top: -10px; left: -10px; cursor: nwse-resize; }
+.handle-se { bottom: -10px; right: -10px; cursor: nwse-resize; }
+.handle-sw { bottom: -10px; left: -10px; cursor: nesw-resize; }
+.handle-n::after, .handle-s::after { left: 50%; top: 50%; width: 38px; height: 6px; transform: translate(-50%, -50%); }
+.handle-e::after, .handle-w::after { left: 50%; top: 50%; width: 6px; height: 38px; transform: translate(-50%, -50%); }
+.handle-ne::after, .handle-nw::after, .handle-se::after, .handle-sw::after {
+    left: 50%; top: 50%; width: 16px; height: 16px; transform: translate(-50%, -50%); border-radius: 50%;
+}
+
+/* Miniatura de proporção nos botões de preset de redes sociais */
+.preset-swatch {
+    width: 20px;
+    height: auto;
+    max-height: 32px;
+    min-height: 8px;
+    background: rgba(16, 185, 129, 0.12);
+    border: 1.5px solid #34d399;
+    border-radius: 3px;
+}

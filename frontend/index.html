@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ágora Vermelha - Agregador de Conteúdo e Fórum Progressista</title>
+
+  <!-- Google Fonts: Inter & Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@700;800&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            display: ['Plus Jakarta Sans', 'sans-serif'],
+          },
+          colors: {
+            // Variables configured via inline CSS tokens below
+            agora: {
+              red: '#DC2828',
+              redDark: '#FF4D4D',
+              deep: '#212121',
+              offwhite: '#FAFAFA'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* CSS Variables Design System Tokens */
+    :root {
+      --bg: #FAFAFA;
+      --surface: #FFFFFF;
+      --text-primary: #1A1A1A;
+      --text-secondary: #555555;
+      --brand: #DC2828;
+      --border: #E0E0E0;
+    }
+
+    .dark {
+      --bg: #121212;
+      --surface: #1E1E1E;
+      --text-primary: #F5F5F5;
+      --text-secondary: #A0A0A0;
+      --brand: #FF4D4D;
+      --border: #2C2C2C;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text-primary);
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+      transition: background-color 0.25s ease, color 0.25s ease;
+    }
+
+    .surface-card {
+      background-color: var(--surface);
+      border-color: var(--border);
+    }
+
+    .border-token {
+      border-color: var(--border);
+    }
+
+    .text-primary-token {
+      color: var(--text-primary);
+    }
+
+    .text-secondary-token {
+      color: var(--text-secondary);
+    }
+
+    .brand-accent {
+      color: var(--brand);
+    }
+
+    .bg-brand {
+      background-color: var(--brand);
+    }
+
+    .font-logo {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 800;
+      font-size: 28px;
+    }
+
+    @media (min-width: 768px) {
+      .font-logo {
+        font-size: 32px;
+      }
+    }
+
+    .font-h1 {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 700;
+      font-size: 24px;
+    }
+
+    .font-h2 {
+      font-family: 'Inter', sans-serif;
+      font-weight: 600;
+      font-size: 18px;
+    }
+
+    .font-caption {
+      font-family: 'Inter', sans-serif;
+      font-weight: 400;
+      font-size: 12px;
+    }
+
+    /* Rating Star Animations */
+    .star-rating i {
+      transition: transform 0.15s ease, color 0.15s ease;
+    }
+    .star-rating i:hover {
+      transform: scale(1.25);
+    }
+
+    /* Custom Toast Slide */
+    #toast {
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col md:flex-row antialiased">
+
+  <!-- ==================== MENU LATERAL (SIDEBAR) ==================== -->
+  <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-64 surface-card border-r border-token transform -translate-x-full md:translate-x-0 transition-transform duration-200 ease-in-out flex flex-col justify-between">
+    <div>
+      <!-- Marca Mobile / Header Sidebar -->
+      <div class="h-20 flex items-center justify-between px-6 border-b border-token">
+        <a href="#" class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-lg bg-brand text-white flex items-center justify-center font-bold text-lg shadow-sm">
+            Á
+          </div>
+          <span class="font-logo tracking-tight text-primary-token">Ágora<span class="brand-accent">.</span></span>
+        </a>
+        <button id="closeSidebarBtn" class="md:hidden text-secondary-token hover:text-primary-token p-2 rounded-lg" aria-label="Fechar menu">
+          <i class="fa-solid fa-xmark text-xl"></i>
+        </button>
+      </div>
+
+      <!-- Links de Navegação -->
+      <nav class="p-4 space-y-1.5" aria-label="Navegação Principal">
+        <a href="#" onclick="filterPosts('todos', this)" class="nav-item active flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl bg-slate-100 dark:bg-zinc-800 text-primary-token transition-colors">
+          <i class="fa-solid fa-house brand-accent text-base"></i>
+          <span>Principal</span>
+        </a>
+        <a href="#" onclick="filterPosts('Notícias', this)" class="nav-item flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl text-secondary-token hover:bg-slate-100 dark:hover:bg-zinc-800/60 hover:text-primary-token transition-colors">
+          <i class="fa-solid fa-newspaper text-base"></i>
+          <span>Notícias</span>
+        </a>
+        <a href="#" onclick="filterPosts('Debates', this)" class="nav-item flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl text-secondary-token hover:bg-slate-100 dark:hover:bg-zinc-800/60 hover:text-primary-token transition-colors">
+          <i class="fa-solid fa-comments text-base"></i>
+          <span>Debates</span>
+        </a>
+        <a href="#" onclick="filterPosts('Mais Avaliados', this)" class="nav-item flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl text-secondary-token hover:bg-slate-100 dark:hover:bg-zinc-800/60 hover:text-primary-token transition-colors">
+          <i class="fa-solid fa-fire text-base"></i>
+          <span>Tópicos Em Alta</span>
+        </a>
+      </nav>
+    </div>
+
+    <!-- Banner / Rodapé Sidebar -->
+    <div class="p-4 border-t border-token space-y-3">
+      <div class="p-3 rounded-xl bg-red-50 dark:bg-zinc-800/80 border border-red-100 dark:border-zinc-700">
+        <p class="font-caption brand-accent font-semibold flex items-center gap-1.5">
+          <i class="fa-solid fa-shield-halved"></i> Espaço Progressista
+        </p>
+        <p class="font-caption text-secondary-token mt-1">Junte-se à construção de um debate público plural, ético e democrático.</p>
+      </div>
+      <p class="font-caption text-secondary-token text-center">&copy; 2026 Ágora Vermelha</p>
+    </div>
+  </aside>
+
+  <!-- Overlay Mobile -->
+  <div id="sidebarOverlay" class="fixed inset-0 bg-black/50 z-30 hidden md:hidden backdrop-blur-sm"></div>
+
+  <!-- ==================== CONTEÚDO PRINCIPAL ==================== -->
+  <div class="flex-1 md:ml-64 flex flex-col min-h-screen">
+
+    <!-- CABEÇALHO (HEADER) -->
+    <header class="sticky top-0 z-20 surface-card/90 backdrop-blur-md border-b border-token px-4 lg:px-8 h-20 flex items-center justify-between gap-4">
+      
+      <!-- Esquerda: Toggle Mobile + Logo -->
+      <div class="flex items-center gap-3">
+        <button id="openSidebarBtn" class="md:hidden p-2 rounded-xl text-secondary-token hover:bg-slate-100 dark:hover:bg-zinc-800" aria-label="Abrir Menu">
+          <i class="fa-solid fa-bars text-xl"></i>
+        </button>
+        
+        <a href="#" class="flex items-center gap-2">
+          <span class="font-logo tracking-tight text-primary-token">Ágora<span class="brand-accent">Vermelha</span></span>
+        </a>
+      </div>
+
+      <!-- Centro: Barra de Busca (Desktop) -->
+      <div class="hidden sm:flex flex-1 max-w-md mx-4 relative">
+        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-secondary-token text-xs"></i>
+        <input type="text" id="searchInput" onkeyup="handleSearch()" placeholder="Buscar notícias, artigos e debates..." class="w-full pl-9 pr-4 py-2 rounded-xl border border-token surface-card text-xs text-primary-token placeholder:text-secondary-token focus:outline-none focus:ring-2 focus:ring-red-500/30 transition-all">
+      </div>
+
+      <!-- Direita: Theme Toggle + Login CTA -->
+      <div class="flex items-center gap-2.5">
+        <!-- Switcher de Tema -->
+        <button id="themeToggleBtn" onclick="toggleTheme()" class="p-2.5 rounded-xl border border-token text-secondary-token hover:text-primary-token hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors" title="Alternar Tema Claro/Escuro" aria-label="Alternar Tema">
+          <i id="themeIcon" class="fa-solid fa-moon text-base"></i>
+        </button>
+
+        <!-- Botão Entrar -->
+        <button id="loginBtn" class="flex items-center gap-2 bg-brand hover:opacity-90 text-white font-medium px-4 py-2 rounded-xl text-xs sm:text-sm transition-all shadow-sm active:scale-95">
+          <i class="fa-solid fa-right-to-bracket"></i>
+          <span class="hidden sm:inline">Entrar / Cadastrar</span>
+          <span class="sm:hidden">Entrar</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- ÁREA DE FEED -->
+    <main class="flex-1 max-w-3xl w-full mx-auto px-4 py-6 md:py-8 space-y-6">
+
+      <!-- Barra de Filtros Rápidos -->
+      <div class="flex items-center justify-between gap-2 overflow-x-auto pb-1 no-scrollbar">
+        <div class="flex items-center gap-2">
+          <button onclick="filterPosts('todos', this)" class="filter-tab active text-xs font-semibold px-4 py-2 rounded-xl bg-brand text-white transition-all">
+            Todos
+          </button>
+          <button onclick="filterPosts('Notícias', this)" class="filter-tab text-xs font-medium px-4 py-2 rounded-xl surface-card border border-token text-secondary-token hover:text-primary-token transition-all">
+            Notícias
+          </button>
+          <button onclick="filterPosts('Debates', this)" class="filter-tab text-xs font-medium px-4 py-2 rounded-xl surface-card border border-token text-secondary-token hover:text-primary-token transition-all">
+            Debates
+          </button>
+          <button onclick="filterPosts('Mais Avaliados', this)" class="filter-tab text-xs font-medium px-4 py-2 rounded-xl surface-card border border-token text-secondary-token hover:text-primary-token transition-all">
+            Mais Avaliados
+          </button>
+        </div>
+      </div>
+
+      <!-- FEED DE CONTEÚDO -->
+      <div id="postsFeed" class="space-y-6">
+        <!-- Skeleton Loading State -->
+        <div class="surface-card rounded-2xl p-6 border border-token shadow-sm animate-pulse space-y-4">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-slate-200 dark:bg-zinc-700"></div>
+            <div class="space-y-2 flex-1">
+              <div class="h-4 bg-slate-200 dark:bg-zinc-700 rounded w-1/3"></div>
+              <div class="h-3 bg-slate-100 dark:bg-zinc-800 rounded w-1/4"></div>
+            </div>
+          </div>
+          <div class="h-36 bg-slate-100 dark:bg-zinc-800 rounded-xl"></div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- ==================== MODAL DE LOGIN ==================== -->
+  <div id="loginModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm hidden">
+    <div class="surface-card border border-token rounded-3xl max-w-md w-full p-6 md:p-8 shadow-2xl relative">
+      <button id="closeLoginModal" class="absolute top-4 right-4 text-secondary-token hover:text-primary-token p-2 rounded-full">
+        <i class="fa-solid fa-xmark text-lg"></i>
+      </button>
+
+      <div class="text-center mb-6">
+        <div class="w-12 h-12 rounded-2xl bg-red-50 dark:bg-zinc-800 brand-accent flex items-center justify-center mx-auto mb-3 text-xl font-bold">
+          <i class="fa-solid fa-user-shield"></i>
+        </div>
+        <h3 class="font-h1 text-primary-token">Acesse a Ágora</h3>
+        <p class="font-caption text-secondary-token mt-1">Conecte-se para interagir, avaliar e publicar.</p>
+      </div>
+
+      <!-- Auth Google -->
+      <button onclick="handleGoogleLogin()" class="w-full flex items-center justify-center gap-3 surface-card border border-token hover:bg-slate-50 dark:hover:bg-zinc-800 text-primary-token font-medium py-2.5 px-4 rounded-xl text-xs sm:text-sm transition-all mb-4">
+        <svg class="w-5 h-5" viewBox="0 0 24 24">
+          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+        </svg>
+        <span>Entrar com o Google</span>
+      </button>
+
+      <div class="relative flex py-2 items-center mb-4">
+        <div class="flex-grow border-t border-token"></div>
+        <span class="flex-shrink mx-3 font-caption text-secondary-token uppercase tracking-wider">ou e-mail</span>
+        <div class="flex-grow border-t border-token"></div>
+      </div>
+
+      <form onsubmit="handleFormLogin(event)" class="space-y-3">
+        <div>
+          <label class="block font-caption font-semibold text-primary-token mb-1">E-mail</label>
+          <input type="email" required placeholder="seu@email.com" class="w-full px-3.5 py-2.5 rounded-xl border border-token surface-card text-xs text-primary-token focus:outline-none focus:ring-2 focus:ring-red-500/20">
+        </div>
+        <div>
+          <label class="block font-caption font-semibold text-primary-token mb-1">Senha</label>
+          <input type="password" required placeholder="••••••••" class="w-full px-3.5 py-2.5 rounded-xl border border-token surface-card text-xs text-primary-token focus:outline-none focus:ring-2 focus:ring-red-500/20">
+        </div>
+        <button type="submit" class="w-full bg-brand hover:opacity-90 text-white font-medium py-2.5 rounded-xl text-xs sm:text-sm transition-all mt-2">
+          Acessar Conta
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL DE COMPARTILHAMENTO ==================== -->
+  <div id="shareModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm hidden">
+    <div class="surface-card border border-token rounded-3xl max-w-sm w-full p-6 shadow-2xl relative">
+      <button id="closeShareModal" class="absolute top-4 right-4 text-secondary-token hover:text-primary-token p-1 rounded-full">
+        <i class="fa-solid fa-xmark text-lg"></i>
+      </button>
+
+      <h3 class="font-h2 text-primary-token mb-1">Compartilhar Conteúdo</h3>
+      <p class="font-caption text-secondary-token mb-4">Propague esta publicação em suas redes sociais:</p>
+
+      <div id="shareOptionsList" class="grid grid-cols-2 gap-2.5">
+        <!-- Renderizado dinamicamente -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== TOAST DE NOTIFICAÇÃO ==================== -->
+  <div id="toast" class="fixed bottom-5 right-5 z-50 bg-zinc-900 text-white text-xs font-medium px-4 py-3 rounded-2xl shadow-xl flex items-center gap-2 transform translate-y-16 opacity-0 pointer-events-none">
+    <i id="toastIcon" class="fa-solid fa-circle-check brand-accent text-base"></i>
+    <span id="toastMessage">Ação concluída com sucesso!</span>
+  </div>
+
+  <!-- ==================== LOGICA DA APLICAÇÃO ==================== -->
+  <script>
+    const API_BASE_URL = 'http://localhost:3000/api';
+    /*const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+      ? 'http://localhost:3000/api'
+      : 'https://seu-backend.onrender.com/api';*/
+
+    let currentPostsData = [];
+    let activeCategory = 'todos';
+    let searchQuery = '';
+
+    document.addEventListener('DOMContentLoaded', () => {
+      setupUIEvents();
+      fetchPosts();
+    });
+
+    // Theme Switcher Logic
+    function toggleTheme() {
+      const html = document.documentElement;
+      const themeIcon = document.getElementById('themeIcon');
+      
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        html.classList.add('light');
+        themeIcon.className = 'fa-solid fa-moon text-base';
+        localStorage.setItem('agora-theme', 'light');
+      } else {
+        html.classList.remove('light');
+        html.classList.add('dark');
+        themeIcon.className = 'fa-solid fa-sun text-base';
+        localStorage.setItem('agora-theme', 'dark');
+      }
+    }
+
+    // Backend / Mock Data Fetcher
+    async function fetchPosts() {
+      const feedContainer = document.getElementById('feed-container'); // Ajuste para o ID da sua div de feed
+      
+      try {
+        const response = await fetch(`${API_BASE_URL}/posts`);
+        if (!response.ok) throw new Error('Erro ao buscar posts da API');
+        
+        const posts = await response.json();
+        renderFeed(posts);
+      } catch (error) {
+        console.error('Erro ao conectar com o backend:', error);
+        // Exibe mensagem de erro amigável na tela
+        if (feedContainer) {
+          feedContainer.innerHTML = `
+            <div class="error-card">
+              <p>Não foi possível carregar o feed no momento.</p>
+            </div>
+          `;
+        }
+      }
+    }
+
+    // Search and Filter Handlers
+    function handleSearch() {
+      searchQuery = document.getElementById('searchInput').value.toLowerCase();
+      renderFilteredPosts();
+    }
+
+    function filterPosts(category, buttonElement) {
+      activeCategory = category;
+
+      // Update Nav/Tab styles
+      document.querySelectorAll('.filter-tab, .nav-item').forEach(el => el.classList.remove('active', 'bg-brand', 'text-white'));
+      if (buttonElement) {
+        buttonElement.classList.add('active');
+        if (buttonElement.classList.contains('filter-tab')) {
+          buttonElement.classList.add('bg-brand', 'text-white');
+        }
+      }
+
+      renderFilteredPosts();
+    }
+
+    function renderFilteredPosts() {
+      let filtered = [...currentPostsData];
+
+      if (activeCategory === 'Notícias') {
+        filtered = filtered.filter(p => p.category === 'Notícias');
+      } else if (activeCategory === 'Debates') {
+        filtered = filtered.filter(p => p.category === 'Debates');
+      } else if (activeCategory === 'Mais Avaliados') {
+        filtered.sort((a, b) => b.rating - a.rating);
+      }
+
+      if (searchQuery) {
+        filtered = filtered.filter(p => 
+          p.title.toLowerCase().includes(searchQuery) || 
+          p.content.toLowerCase().includes(searchQuery)
+        );
+      }
+
+      renderFeed(filtered);
+    }
+
+    // Render Cards
+    function renderFeed(posts) {
+      const feedContainer = document.getElementById('postsFeed');
+      if (!posts || posts.length === 0) {
+        feedContainer.innerHTML = `
+          <div class="surface-card rounded-2xl p-8 text-center border border-token">
+            <p class="text-secondary-token">Nenhum conteúdo encontrado para o filtro selecionado.</p>
+          </div>
+        `;
+        return;
+      }
+
+      feedContainer.innerHTML = posts.map(post => createPostCardHTML(post)).join('');
+    }
+
+    function createPostCardHTML(post) {
+      return `
+        <article class="surface-card rounded-2xl border border-token shadow-sm hover:shadow-md transition-all overflow-hidden" id="post-${post.id}">
+          
+          <div class="p-5 flex items-center justify-between border-b border-token">
+            <div class="flex items-center gap-3">
+              <img src="${post.authorAvatar}" alt="${post.author}" class="w-10 h-10 rounded-full object-cover">
+              <div>
+                <div class="flex items-center gap-2">
+                  <h4 class="font-bold text-primary-token text-xs sm:text-sm">${post.author}</h4>
+                  <span class="bg-red-50 dark:bg-zinc-800 brand-accent text-[10px] font-semibold px-2 py-0.5 rounded-md border border-red-100 dark:border-zinc-700">${post.authorRole || 'Editorial'}</span>
+                </div>
+                <p class="font-caption text-secondary-token">${post.createdAt}</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="p-5 space-y-3">
+            <h3 class="font-h1 text-primary-token leading-snug">${post.title}</h3>
+            <p class="text-secondary-token text-sm leading-relaxed">${post.content}</p>
+            
+            ${post.imageUrl ? `
+              <div class="mt-3 rounded-xl overflow-hidden bg-zinc-100 dark:bg-zinc-800 border border-token">
+                <img src="${post.imageUrl}" alt="${post.title}" class="w-full max-h-96 object-cover hover:scale-102 transition-transform duration-300" loading="lazy">
+              </div>
+            ` : ''}
+          </div>
+
+          <div class="px-5 py-4 bg-slate-50/50 dark:bg-zinc-900/40 border-t border-token flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            
+            <!-- 5 Estrelas -->
+            <div class="flex items-center gap-2">
+              <span class="font-caption text-secondary-token font-semibold">Avaliação:</span>
+              <div class="star-rating flex items-center gap-1 text-amber-400 text-base cursor-pointer">
+                ${[1, 2, 3, 4, 5].map(star => `
+                  <i class="${star <= (post.userRating || Math.round(post.rating)) ? 'fa-solid' : 'fa-regular'} fa-star" 
+                     onclick="ratePost(${post.id}, ${star})" 
+                     title="Avaliar com ${star} estrela(s)"></i>
+                `).join('')}
+              </div>
+              <span id="rating-avg-${post.id}">${post.ratingAverage || '0.0'}</span>
+              <span id="rating-count-${post.id}">(${post.ratingCount || 0} avaliações)</span>
+            </div>
+
+            <!-- Compartilhar -->
+            <button onclick="openShareMenu(${post.id})" class="inline-flex items-center justify-center gap-2 surface-card border border-token hover:bg-slate-100 dark:hover:bg-zinc-800 text-primary-token font-medium px-4 py-2 rounded-xl text-xs transition-all active:scale-95">
+              <i class="fa-solid fa-share-nodes brand-accent"></i>
+              <span>Compartilhar</span>
+            </button>
+          </div>
+
+        </article>
+      `;
+    }
+
+    // Classificação com feedback
+    async function ratePost(postId, rating) {
+      try {
+        const response = await fetch(`${API_BASE_URL}/posts/${postId}/rate`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ rating: rating })
+        });
+
+        if (!response.ok) {
+          throw new Error('Falha ao enviar avaliação');
+        }
+
+        const data = await response.json();
+        
+        // Atualiza a média e a quantidade de votos na interface
+        const ratingAverageEl = document.getElementById(`rating-avg-${postId}`);
+        const ratingCountEl = document.getElementById(`rating-count-${postId}`);
+
+        if (ratingAverageEl) ratingAverageEl.textContent = data.ratingAverage;
+        if (ratingCountEl) ratingCountEl.textContent = `(${data.ratingCount} avaliações)`;
+
+        alert('Obrigado pela sua avaliação!');
+      } catch (error) {
+        console.error('Erro ao registrar avaliação:', error);
+        alert('Erro ao enviar sua avaliação. Tente novamente.');
+      }
+    }
+
+    // Modal de Compartilhamento
+    function openShareMenu(postId) {
+      const post = currentPostsData.find(p => p.id === postId);
+      if (!post) return;
+
+      const shareModal = document.getElementById('shareModal');
+      const shareList = document.getElementById('shareOptionsList');
+
+      const textToShare = `${post.title} - Ágora Vermelha`;
+      const currentUrl = window.location.href;
+
+      const sharePlatforms = [
+        {
+          name: 'WhatsApp',
+          icon: 'fa-brands fa-whatsapp',
+          color: 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 border-emerald-200 dark:border-emerald-800',
+          action: () => window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(textToShare + ' ' + currentUrl)}`, '_blank')
+        },
+        {
+          name: 'Status WhatsApp',
+          icon: 'fa-solid fa-circle-notch',
+          color: 'bg-teal-50 dark:bg-teal-950/30 text-teal-600 border-teal-200 dark:border-teal-800',
+          action: () => {
+            copyToClipboard(textToShare + ' ' + currentUrl);
+            showToast('Copiado! Cole no seu Status do WhatsApp.');
+          }
+        },
+        {
+          name: 'Instagram',
+          icon: 'fa-brands fa-instagram',
+          color: 'bg-pink-50 dark:bg-pink-950/30 text-pink-600 border-pink-200 dark:border-pink-800',
+          action: () => {
+            copyToClipboard(currentUrl);
+            showToast('Link copiado para envio no Instagram!');
+          }
+        },
+        {
+          name: 'Stories Instagram',
+          icon: 'fa-solid fa-camera-retro',
+          color: 'bg-purple-50 dark:bg-purple-950/30 text-purple-600 border-purple-200 dark:border-purple-800',
+          action: () => {
+            copyToClipboard(currentUrl);
+            showToast('Link copiado! Adicione a figurinha de link no Stories.');
+          }
+        },
+        {
+          name: 'Facebook',
+          icon: 'fa-brands fa-facebook-f',
+          color: 'bg-blue-50 dark:bg-blue-950/30 text-blue-600 border-blue-200 dark:border-blue-800',
+          action: () => window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(currentUrl)}`, '_blank')
+        },
+        {
+          name: 'Stories Facebook',
+          icon: 'fa-solid fa-clone',
+          color: 'bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 border-indigo-200 dark:border-indigo-800',
+          action: () => {
+            copyToClipboard(currentUrl);
+            showToast('Link copiado! Cole no seu Story do Facebook.');
+          }
+        },
+        {
+          name: 'X (Twitter)',
+          icon: 'fa-brands fa-x-twitter',
+          color: 'bg-zinc-100 dark:bg-zinc-800 text-primary-token border-token',
+          action: () => window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(textToShare)}&url=${encodeURIComponent(currentUrl)}`, '_blank')
+        },
+        {
+          name: 'Copiar Link',
+          icon: 'fa-solid fa-link',
+          color: 'bg-slate-50 dark:bg-zinc-800 text-secondary-token border-token',
+          action: () => {
+            copyToClipboard(currentUrl);
+            showToast('Link copiado para a área de transferência!');
+          }
+        }
+      ];
+
+      shareList.innerHTML = sharePlatforms.map(p => `
+        <button onclick="executeShare('${p.name}')" class="flex items-center gap-2.5 p-3 rounded-2xl border text-xs font-semibold transition-all ${p.color}">
+          <i class="${p.icon} text-base"></i>
+          <span>${p.name}</span>
+        </button>
+      `).join('');
+
+      window.activeSharePlatforms = sharePlatforms;
+      shareModal.classList.remove('hidden');
+    }
+
+    function executeShare(name) {
+      const platform = window.activeSharePlatforms.find(p => p.name === name);
+      if (platform) platform.action();
+      document.getElementById('shareModal').classList.add('hidden');
+    }
+
+    function copyToClipboard(text) {
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text);
+      } else {
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+      }
+    }
+
+    function setupUIEvents() {
+      // Sidebar
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('sidebarOverlay');
+
+      document.getElementById('openSidebarBtn').addEventListener('click', () => {
+        sidebar.classList.remove('-translate-x-full');
+        overlay.classList.remove('hidden');
+      });
+
+      const closeSidebar = () => {
+        sidebar.classList.add('-translate-x-full');
+        overlay.classList.add('hidden');
+      };
+
+      document.getElementById('closeSidebarBtn').addEventListener('click', closeSidebar);
+      overlay.addEventListener('click', closeSidebar);
+
+      // Login Modal
+      const loginModal = document.getElementById('loginModal');
+      document.getElementById('loginBtn').addEventListener('click', () => loginModal.classList.remove('hidden'));
+      document.getElementById('closeLoginModal').addEventListener('click', () => loginModal.classList.add('hidden'));
+
+      // Share Modal Close
+      document.getElementById('closeShareModal').addEventListener('click', () => {
+        document.getElementById('shareModal').classList.add('hidden');
+      });
+    }
+
+    function handleGoogleLogin() {
+      showToast('Autenticação Google em andamento...');
+      document.getElementById('loginModal').classList.add('hidden');
+    }
+
+    function handleFormLogin(e) {
+      e.preventDefault();
+      showToast('Login efetuado com sucesso!');
+      document.getElementById('loginModal').classList.add('hidden');
+    }
+
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      document.getElementById('toastMessage').textContent = message;
+      toast.classList.remove('translate-y-16', 'opacity-0', 'pointer-events-none');
+
+      setTimeout(() => {
+        toast.classList.add('translate-y-16', 'opacity-0', 'pointer-events-none');
+      }, 3500);
+    }
+  </script>
+</body>
+</html>
