@@ -9,7 +9,7 @@ exports.up = pgm => {
       notNull: true,
       default: pgm.func('current_timestamp'),
     },
-  });
+  }, { ifNotExists: true });
 
   // Tabela de Perfis Públicos
   pgm.createTable('profiles', {
@@ -29,7 +29,7 @@ exports.up = pgm => {
       notNull: true,
       default: pgm.func('current_timestamp'),
     },
-  });
+  }, { ifNotExists: true });
 };
 
 exports.down = pgm => {

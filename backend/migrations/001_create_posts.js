@@ -13,7 +13,7 @@ exports.up = pgm => {
       notNull: true,
       default: pgm.func('current_timestamp'),
     },
-  });
+  }, { ifNotExists: true });
 };
 
 exports.down = pgm => {
