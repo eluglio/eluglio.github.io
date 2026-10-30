@@ -1,0 +1,18 @@
+name: Deploy Frontend
+
+on:
+  push:
+    branches: [ main ] # Altere para 'master' se a sua branch principal for master
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: frontend # Pasta onde está o seu HTML/CSS/JS
+          branch: gh-pages
