@@ -16,6 +16,13 @@
   <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
+  <!-- Google Identity Services (Google Auth) -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <!-- Cropper.js CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
+  <!-- Cropper.js JS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+
   <script>
     tailwind.config = {
       darkMode: 'class',
@@ -26,7 +33,6 @@
             display: ['Plus Jakarta Sans', 'sans-serif'],
           },
           colors: {
-            // Variables configured via inline CSS tokens below
             agora: {
               red: '#DC2828',
               redDark: '#FF4D4D',
@@ -40,7 +46,6 @@
   </script>
 
   <style>
-    /* CSS Variables Design System Tokens */
     :root {
       --bg: #FAFAFA;
       --surface: #FFFFFF;
@@ -123,7 +128,6 @@
       font-size: 12px;
     }
 
-    /* Rating Star Animations */
     .star-rating i {
       transition: transform 0.15s ease, color 0.15s ease;
     }
@@ -131,7 +135,6 @@
       transform: scale(1.25);
     }
 
-    /* Custom Toast Slide */
     #toast {
       transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
     }
@@ -142,7 +145,6 @@
   <!-- ==================== MENU LATERAL (SIDEBAR) ==================== -->
   <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-64 surface-card border-r border-token transform -translate-x-full md:translate-x-0 transition-transform duration-200 ease-in-out flex flex-col justify-between">
     <div>
-      <!-- Marca Mobile / Header Sidebar -->
       <div class="h-20 flex items-center justify-between px-6 border-b border-token">
         <a href="#" class="flex items-center gap-2">
           <div class="w-8 h-8 rounded-lg bg-brand text-white flex items-center justify-center font-bold text-lg shadow-sm">
@@ -155,7 +157,6 @@
         </button>
       </div>
 
-      <!-- Links de Navegação -->
       <nav class="p-4 space-y-1.5" aria-label="Navegação Principal">
         <a href="#" onclick="filterPosts('todos', this)" class="nav-item active flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl bg-slate-100 dark:bg-zinc-800 text-primary-token transition-colors">
           <i class="fa-solid fa-house brand-accent text-base"></i>
@@ -176,7 +177,6 @@
       </nav>
     </div>
 
-    <!-- Banner / Rodapé Sidebar -->
     <div class="p-4 border-t border-token space-y-3">
       <div class="p-3 rounded-xl bg-red-50 dark:bg-zinc-800/80 border border-red-100 dark:border-zinc-700">
         <p class="font-caption brand-accent font-semibold flex items-center gap-1.5">
@@ -188,7 +188,6 @@
     </div>
   </aside>
 
-  <!-- Overlay Mobile -->
   <div id="sidebarOverlay" class="fixed inset-0 bg-black/50 z-30 hidden md:hidden backdrop-blur-sm"></div>
 
   <!-- ==================== CONTEÚDO PRINCIPAL ==================== -->
@@ -197,7 +196,6 @@
     <!-- CABEÇALHO (HEADER) -->
     <header class="sticky top-0 z-20 surface-card/90 backdrop-blur-md border-b border-token px-4 lg:px-8 h-20 flex items-center justify-between gap-4">
       
-      <!-- Esquerda: Toggle Mobile + Logo -->
       <div class="flex items-center gap-3">
         <button id="openSidebarBtn" class="md:hidden p-2 rounded-xl text-secondary-token hover:bg-slate-100 dark:hover:bg-zinc-800" aria-label="Abrir Menu">
           <i class="fa-solid fa-bars text-xl"></i>
@@ -208,32 +206,30 @@
         </a>
       </div>
 
-      <!-- Centro: Barra de Busca (Desktop) -->
       <div class="hidden sm:flex flex-1 max-w-md mx-4 relative">
         <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-secondary-token text-xs"></i>
         <input type="text" id="searchInput" onkeyup="handleSearch()" placeholder="Buscar notícias, artigos e debates..." class="w-full pl-9 pr-4 py-2 rounded-xl border border-token surface-card text-xs text-primary-token placeholder:text-secondary-token focus:outline-none focus:ring-2 focus:ring-red-500/30 transition-all">
       </div>
 
-      <!-- Direita: Theme Toggle + Login CTA -->
       <div class="flex items-center gap-2.5">
-        <!-- Switcher de Tema -->
         <button id="themeToggleBtn" onclick="toggleTheme()" class="p-2.5 rounded-xl border border-token text-secondary-token hover:text-primary-token hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors" title="Alternar Tema Claro/Escuro" aria-label="Alternar Tema">
           <i id="themeIcon" class="fa-solid fa-moon text-base"></i>
         </button>
 
-        <!-- Botão Entrar -->
-        <button id="loginBtn" class="flex items-center gap-2 bg-brand hover:opacity-90 text-white font-medium px-4 py-2 rounded-xl text-xs sm:text-sm transition-all shadow-sm active:scale-95">
-          <i class="fa-solid fa-right-to-bracket"></i>
-          <span class="hidden sm:inline">Entrar / Cadastrar</span>
-          <span class="sm:hidden">Entrar</span>
-        </button>
+        <!-- Botão Entrar / Container de Usuário Logado -->
+        <div id="userHeaderContainer">
+          <button id="loginBtn" class="flex items-center gap-2 bg-brand hover:opacity-90 text-white font-medium px-4 py-2 rounded-xl text-xs sm:text-sm transition-all shadow-sm active:scale-95">
+            <i class="fa-solid fa-right-to-bracket"></i>
+            <span class="hidden sm:inline">Entrar / Cadastrar</span>
+            <span class="sm:hidden">Entrar</span>
+          </button>
+        </div>
       </div>
     </header>
 
     <!-- ÁREA DE FEED -->
     <main class="flex-1 max-w-3xl w-full mx-auto px-4 py-6 md:py-8 space-y-6">
 
-      <!-- Barra de Filtros Rápidos -->
       <div class="flex items-center justify-between gap-2 overflow-x-auto pb-1 no-scrollbar">
         <div class="flex items-center gap-2">
           <button onclick="filterPosts('todos', this)" class="filter-tab active text-xs font-semibold px-4 py-2 rounded-xl bg-brand text-white transition-all">
@@ -251,9 +247,7 @@
         </div>
       </div>
 
-      <!-- FEED DE CONTEÚDO -->
       <div id="postsFeed" class="space-y-6">
-        <!-- Skeleton Loading State -->
         <div class="surface-card rounded-2xl p-6 border border-token shadow-sm animate-pulse space-y-4">
           <div class="flex items-center gap-3">
             <div class="w-10 h-10 rounded-full bg-slate-200 dark:bg-zinc-700"></div>
@@ -284,16 +278,8 @@
         <p class="font-caption text-secondary-token mt-1">Conecte-se para interagir, avaliar e publicar.</p>
       </div>
 
-      <!-- Auth Google -->
-      <button onclick="handleGoogleLogin()" class="w-full flex items-center justify-center gap-3 surface-card border border-token hover:bg-slate-50 dark:hover:bg-zinc-800 text-primary-token font-medium py-2.5 px-4 rounded-xl text-xs sm:text-sm transition-all mb-4">
-        <svg class="w-5 h-5" viewBox="0 0 24 24">
-          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
-          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
-        </svg>
-        <span>Entrar com o Google</span>
-      </button>
+      <!-- Container do Botão Google Renderizado Oficialmente -->
+      <div id="googleButtonDiv" class="flex justify-center mb-4"></div>
 
       <div class="relative flex py-2 items-center mb-4">
         <div class="flex-grow border-t border-token"></div>
@@ -301,18 +287,29 @@
         <div class="flex-grow border-t border-token"></div>
       </div>
 
-      <form onsubmit="handleFormLogin(event)" class="space-y-3">
+      <form id="authForm" onsubmit="handleEmailAuth(event)" class="space-y-3">
+        <div id="nameFieldContainer" class="hidden">
+          <label class="block font-caption font-semibold text-primary-token mb-1">Nome completo</label>
+          <input type="text" id="registerName" placeholder="Seu Nome" class="w-full px-3.5 py-2.5 rounded-xl border border-token surface-card text-xs text-primary-token focus:outline-none focus:ring-2 focus:ring-red-500/20">
+        </div>
         <div>
           <label class="block font-caption font-semibold text-primary-token mb-1">E-mail</label>
-          <input type="email" required placeholder="seu@email.com" class="w-full px-3.5 py-2.5 rounded-xl border border-token surface-card text-xs text-primary-token focus:outline-none focus:ring-2 focus:ring-red-500/20">
+          <input type="email" id="authEmail" required placeholder="seu@email.com" class="w-full px-3.5 py-2.5 rounded-xl border border-token surface-card text-xs text-primary-token focus:outline-none focus:ring-2 focus:ring-red-500/20">
         </div>
         <div>
           <label class="block font-caption font-semibold text-primary-token mb-1">Senha</label>
-          <input type="password" required placeholder="••••••••" class="w-full px-3.5 py-2.5 rounded-xl border border-token surface-card text-xs text-primary-token focus:outline-none focus:ring-2 focus:ring-red-500/20">
+          <input type="password" id="authPassword" required placeholder="••••••••" class="w-full px-3.5 py-2.5 rounded-xl border border-token surface-card text-xs text-primary-token focus:outline-none focus:ring-2 focus:ring-red-500/20">
         </div>
-        <button type="submit" class="w-full bg-brand hover:opacity-90 text-white font-medium py-2.5 rounded-xl text-xs sm:text-sm transition-all mt-2">
+        
+        <button type="submit" id="authSubmitBtn" class="w-full bg-brand hover:opacity-90 text-white font-medium py-2.5 rounded-xl text-xs sm:text-sm transition-all mt-2">
           Acessar Conta
         </button>
+
+        <div class="text-center mt-3">
+          <button type="button" onclick="toggleAuthMode()" class="font-caption text-secondary-token hover:text-brand transition-colors">
+            <span id="toggleAuthText">Não tem uma conta? Cadastre-se</span>
+          </button>
+        </div>
       </form>
     </div>
   </div>
@@ -328,7 +325,129 @@
       <p class="font-caption text-secondary-token mb-4">Propague esta publicação em suas redes sociais:</p>
 
       <div id="shareOptionsList" class="grid grid-cols-2 gap-2.5">
-        <!-- Renderizado dinamicamente -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== SIDEBAR DE EDIÇÃO DE PERFIL (DIREITA) ==================== -->
+  <div id="profileSidebar" class="fixed inset-0 z-50 overflow-hidden hidden">
+    <!-- Fundo escurecido -->
+    <div id="sidebarOverlay" class="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity opacity-0" onclick="closeProfileSidebar()"></div>
+
+    <!-- Painel Lateral direito -->
+    <div id="sidebarPanel" class="absolute inset-y-0 right-0 max-w-md w-full surface-card border-l border-token shadow-2xl flex flex-col transform translate-x-full transition-transform duration-300 ease-in-out">
+      
+      <!-- Cabeçalho do Sidebar -->
+      <div class="flex items-center justify-between px-6 py-4 border-b border-token">
+        <h3 class="font-h1 text-primary-token text-lg font-bold">Editar Perfil</h3>
+        <button onclick="closeProfileSidebar()" class="text-secondary-token hover:text-primary-token p-2 rounded-full transition-colors">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <!-- Conteúdo com rolagem -->
+      <div class="flex-1 overflow-y-auto p-6 space-y-6">
+        
+        <!-- 1. FOTO DE PERFIL -->
+        <div class="flex flex-col items-center">
+          <div class="relative w-28 h-28">
+            <!-- Imagem de perfil principal: Apenas abre o preview ampliado ao clicar -->
+            <div class="w-full h-full rounded-full overflow-hidden border-2 border-token shadow-md cursor-pointer group" onclick="openAvatarPreview(document.getElementById('sidebarAvatarImg').src)">
+              <img id="sidebarAvatarImg" src="" alt="Avatar" class="w-full h-full object-cover">
+            </div>
+            
+            <!-- Ícone de máquina fotográfica fixo no canto inferior direito: Dispara o upload ao clicar -->
+            <button onclick="openAvatarCropModal()" class="absolute bottom-0 right-0 bg-brand text-white p-2 rounded-full shadow-lg hover:scale-105 transition-transform flex items-center justify-center w-9 h-9 border-2 border-surface" title="Alterar foto de perfil">
+              <i class="fa-solid fa-camera text-xs"></i>
+            </button>
+          </div>
+          <span class="font-caption text-xs text-secondary-token mt-2">Clique na foto para ampliar ou no ícone para alterar</span>
+        </div>
+
+        <!-- 2. NOME (Edição Inline) -->
+        <div class="space-y-1">
+          <label class="block font-caption font-semibold text-xs text-secondary-token uppercase tracking-wider">Nome</label>
+          <div id="nameDisplayContainer" onclick="enableNameEdit()" class="p-2.5 rounded-xl border border-transparent hover:border-token surface-card cursor-pointer flex items-center justify-between group">
+            <span id="profileNameText" class="font-h1 text-primary-token text-base font-medium">Carregando...</span>
+            <i class="fa-solid fa-pen text-xs text-secondary-token opacity-0 group-hover:opacity-100 transition-opacity"></i>
+          </div>
+          <!-- Input oculto para edição inline -->
+          <input type="text" id="profileNameInput" onblur="saveNameEdit()" onkeydown="handleNameKeydown(event)" class="hidden w-full px-3 py-2 rounded-xl border border-token surface-card text-primary-token text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20" placeholder="Seu nome">
+        </div>
+
+        <!-- 3. BIOGRAFIA (Textarea com contador e edição dinâmica) -->
+        <div class="space-y-1">
+          <div class="flex justify-between items-center">
+            <label class="block font-caption font-semibold text-xs text-secondary-token uppercase tracking-wider">Biografia</label>
+            <span id="bioCounter" class="font-caption text-xs text-secondary-token">0/255</span>
+          </div>
+          <textarea id="profileBioTextarea" maxlength="255" oninput="updateBioCounter()" onblur="saveBioEdit()" rows="3" class="w-full p-3 rounded-xl border border-token surface-card text-primary-token text-xs leading-relaxed focus:outline-none focus:ring-2 focus:ring-red-500/20 resize-none" placeholder="Conte um pouco sobre você..."></textarea>
+        </div>
+
+        <!-- 4. REDES SOCIAIS -->
+        <div class="space-y-3">
+          <label class="block font-caption font-semibold text-xs text-secondary-token uppercase tracking-wider">Redes Sociais</label>
+          
+          <!-- Lista de redes sociais cadastradas -->
+          <div id="socialLinksList" class="space-y-2">
+            <!-- Preenchido dinamicamente via JS -->
+          </div>
+
+          <!-- Input para adicionar nova rede social -->
+          <div class="flex gap-2 mt-2">
+            <input type="url" id="newSocialInput" placeholder="https://github.com/seuusuario" class="flex-1 px-3 py-2 rounded-xl border border-token surface-card text-primary-token text-xs focus:outline-none focus:ring-2 focus:ring-red-500/20">
+            <button onclick="addSocialLink()" class="bg-brand hover:opacity-90 text-white px-4 py-2 rounded-xl text-xs font-medium transition-all">
+              Adicionar
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: POPUP DA FOTO GRANDE ==================== -->
+  <div id="avatarPreviewModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md hidden" onclick="closeAvatarPreview()">
+    <div class="relative max-w-lg w-full p-2 flex justify-center">
+      <button class="absolute top-2 right-2 text-white bg-black/50 hover:bg-black p-2 rounded-full z-10 transition-colors">
+        <i class="fa-solid fa-xmark text-lg"></i>
+      </button>
+      <img id="modalFullImage" src="" alt="Avatar Ampliado" class="max-h-[80vh] max-w-full rounded-2xl object-contain shadow-2xl">
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: CORTE LIVRE E EDIÇÃO DA FOTO ==================== -->
+  <div id="avatarCropModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm hidden">
+    <div class="surface-card border border-token rounded-3xl max-w-lg w-full p-6 shadow-2xl relative flex flex-col max-h-[90vh]">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="font-h1 text-primary-token text-base font-bold">Cortar Foto de Perfil</h3>
+        <button onclick="closeAvatarCropModal()" class="text-secondary-token hover:text-primary-token p-1 rounded-full">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="flex-1 overflow-y-auto space-y-4">
+        <!-- Área inicial de seleção / arrastar e soltar -->
+        <div id="dropArea" class="flex flex-col items-center justify-center border-2 border-dashed border-token rounded-2xl p-8 text-center cursor-pointer hover:border-brand transition-colors" onclick="document.getElementById('avatarFileInput').click()">
+          <i class="fa-solid fa-cloud-arrow-up text-3xl text-secondary-token mb-2 pointer-events-none"></i>
+          <span class="font-caption text-xs text-primary-token font-medium pointer-events-none">
+            Clique para selecionar ou arraste uma imagem aqui
+          </span>
+          <input type="file" id="avatarFileInput" accept="image/*" class="hidden" onchange="handleImageSelected(event)">
+        </div>
+
+        <!-- Container do Cropper (Oculto inicialmente até carregar a imagem) -->
+        <div id="cropperContainer" class="hidden flex flex-col items-center space-y-3">
+          <div class="w-full max-h-[350px] overflow-hidden flex justify-center bg-black/10 rounded-xl">
+            <!-- A imagem que será manipulada pelo Cropper -->
+            <img id="imageToCrop" src="" alt="Cortar Imagem" class="max-w-full block">
+          </div>
+          <p class="font-caption text-xs text-secondary-token text-center">Arraste os cantos ou mova a imagem para ajustar o corte circular.</p>
+          
+          <button onclick="cropAndUploadAvatar()" class="w-full bg-brand hover:opacity-90 text-white font-medium py-2.5 rounded-xl text-xs sm:text-sm transition-all shadow-md">
+            Recortar e Salvar Foto
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -339,9 +458,8 @@
     <span id="toastMessage">Ação concluída com sucesso!</span>
   </div>
 
-  <!-- ==================== LOGICA DA APLICAÇÃO ==================== -->
-  <script>
-    //const API_BASE_URL = 'http://localhost:3000/api';
+  <!-- ==================== LÓGICA DA APLICAÇÃO ==================== -->
+<script>
     const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
       ? 'http://localhost:3000/api'
       : 'https://eluglio.onrender.com/api';
@@ -349,13 +467,132 @@
     let currentPostsData = [];
     let activeCategory = 'todos';
     let searchQuery = '';
+    let currentUser = null;
+
+    let cropper = null;
+    let selectedImageFile = null;
+    let currentProfileData = { name: '', bio: '', avatar_url: '', social_links: [] };
 
     document.addEventListener('DOMContentLoaded', () => {
+      initTheme();
       setupUIEvents();
+      checkSavedUser();
       fetchPosts();
+      initGoogleAuth();
     });
 
-    // Theme Switcher Logic
+    // Inicializador do Botão Oficial do Google
+    function initGoogleAuth() {
+      if (window.google && google.accounts) {
+        google.accounts.id.initialize({
+          client_id: "608368891362-meo2l65gssan7fieblloir35s3cat4rr.apps.googleusercontent.com",
+          callback: handleGoogleCredentialResponse
+        });
+
+        const btnContainer = document.getElementById('googleButtonDiv');
+        if (btnContainer) {
+          google.accounts.id.renderButton(
+            btnContainer,
+            { theme: "outline", size: "large", text: "continue_with", shape: "pill", locale: "pt-BR" }
+          );
+        }
+      } else {
+        setTimeout(initGoogleAuth, 500);
+      }
+    }
+
+    // Callback executado ao selecionar uma conta no Google
+    async function handleGoogleCredentialResponse(response) {
+      showToast('Autenticando com o Google...');
+      document.getElementById('loginModal').classList.add('hidden');
+
+      try {
+        const res = await fetch(`${API_BASE_URL}/users/google-login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ credential: response.credential })
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Falha na autenticação com Google.');
+
+        currentUser = data.user;
+        localStorage.setItem('agora-user', JSON.stringify(currentUser));
+        updateHeaderUserUI();
+        showToast(`Bem-vindo(a), ${currentUser.profile.name}!`);
+
+      } catch (error) {
+        console.error('Erro no Login Google:', error);
+        showToast(error.message || 'Erro ao realizar login.');
+      }
+    }
+
+    function checkSavedUser() {
+      const saved = localStorage.getItem('agora-user');
+      if (saved) {
+        try {
+          currentUser = JSON.parse(saved);
+          updateHeaderUserUI();
+        } catch (e) {
+          localStorage.removeItem('agora-user');
+        }
+      }
+    }
+
+    function updateHeaderUserUI() {
+      const container = document.getElementById('userHeaderContainer');
+      if (!container) return;
+
+      if (currentUser && currentUser.profile) {
+        const cleanPictureUrl = sanitizeGoogleAvatarUrl(currentUser.profile.avatar_url);
+        container.innerHTML = `
+          <div class="flex items-center gap-2.5">
+            <img onclick="openProfileSidebar();" src="${cleanPictureUrl || 'https://via.placeholder.com/40'}" alt="${currentUser.profile.name}" class="w-9 h-9 rounded-full object-cover border border-token shadow-sm cursor-pointer" title="Abrir perfil">
+            <span class="hidden md:inline text-xs font-semibold text-primary-token">${currentUser.profile.name}</span>
+            <button onclick="handleLogout()" class="text-secondary-token hover:text-brand p-1.5 rounded-lg text-xs" title="Sair">
+              <i class="fa-solid fa-right-from-bracket"></i>
+            </button>
+          </div>
+        `;
+      } else {
+        container.innerHTML = `
+          <button id="loginBtn" onclick="document.getElementById('loginModal').classList.remove('hidden')" class="flex items-center gap-2 bg-brand hover:opacity-90 text-white font-medium px-4 py-2 rounded-xl text-xs sm:text-sm transition-all shadow-sm active:scale-95">
+            <i class="fa-solid fa-right-to-bracket"></i>
+            <span class="hidden sm:inline">Entrar / Cadastrar</span>
+            <span class="sm:hidden">Entrar</span>
+          </button>
+        `;
+      }
+    }
+
+    function handleLogout() {
+      currentUser = null;
+      localStorage.removeItem('agora-user');
+      updateHeaderUserUI();
+      resetAuthModal();
+      showToast('Sessão encerrada.');
+    }
+
+    // Gerenciamento de Tema
+    function initTheme() {
+      const savedTheme = localStorage.getItem('agora-theme');
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const html = document.documentElement;
+      const themeIcon = document.getElementById('themeIcon');
+
+      const themeToApply = savedTheme ? savedTheme : (prefersDark ? 'dark' : 'light');
+
+      if (themeToApply === 'dark') {
+        html.classList.remove('light');
+        html.classList.add('dark');
+        if (themeIcon) themeIcon.className = 'fa-solid fa-sun text-base';
+      } else {
+        html.classList.remove('dark');
+        html.classList.add('light');
+        if (themeIcon) themeIcon.className = 'fa-solid fa-moon text-base';
+      }
+    }
+
     function toggleTheme() {
       const html = document.documentElement;
       const themeIcon = document.getElementById('themeIcon');
@@ -363,40 +600,38 @@
       if (html.classList.contains('dark')) {
         html.classList.remove('dark');
         html.classList.add('light');
-        themeIcon.className = 'fa-solid fa-moon text-base';
+        if (themeIcon) themeIcon.className = 'fa-solid fa-moon text-base';
         localStorage.setItem('agora-theme', 'light');
       } else {
         html.classList.remove('light');
         html.classList.add('dark');
-        themeIcon.className = 'fa-solid fa-sun text-base';
+        if (themeIcon) themeIcon.className = 'fa-solid fa-sun text-base';
         localStorage.setItem('agora-theme', 'dark');
       }
     }
 
-    // Backend / Mock Data Fetcher
+    // Fetch Posts
     async function fetchPosts() {
-      const feedContainer = document.getElementById('feed-container'); // Ajuste para o ID da sua div de feed
+      const feedContainer = document.getElementById('postsFeed');
       
       try {
         const response = await fetch(`${API_BASE_URL}/posts`);
         if (!response.ok) throw new Error('Erro ao buscar posts da API');
         
-        const posts = await response.json();
-        renderFeed(posts);
+        currentPostsData = await response.json();
+        renderFilteredPosts();
       } catch (error) {
         console.error('Erro ao conectar com o backend:', error);
-        // Exibe mensagem de erro amigável na tela
         if (feedContainer) {
           feedContainer.innerHTML = `
-            <div class="error-card">
-              <p>Não foi possível carregar o feed no momento.</p>
+            <div class="surface-card rounded-2xl p-8 text-center border border-token">
+              <p class="text-secondary-token">Não foi possível carregar o feed no momento.</p>
             </div>
           `;
         }
       }
     }
 
-    // Search and Filter Handlers
     function handleSearch() {
       searchQuery = document.getElementById('searchInput').value.toLowerCase();
       renderFilteredPosts();
@@ -405,7 +640,6 @@
     function filterPosts(category, buttonElement) {
       activeCategory = category;
 
-      // Update Nav/Tab styles
       document.querySelectorAll('.filter-tab, .nav-item').forEach(el => el.classList.remove('active', 'bg-brand', 'text-white'));
       if (buttonElement) {
         buttonElement.classList.add('active');
@@ -425,20 +659,19 @@
       } else if (activeCategory === 'Debates') {
         filtered = filtered.filter(p => p.category === 'Debates');
       } else if (activeCategory === 'Mais Avaliados') {
-        filtered.sort((a, b) => b.rating - a.rating);
+        filtered.sort((a, b) => b.ratingAverage - a.ratingAverage);
       }
 
       if (searchQuery) {
         filtered = filtered.filter(p => 
           p.title.toLowerCase().includes(searchQuery) || 
-          p.content.toLowerCase().includes(searchQuery)
+          (p.text && p.text.toLowerCase().includes(searchQuery))
         );
       }
 
       renderFeed(filtered);
     }
 
-    // Render Cards
     function renderFeed(posts) {
       const feedContainer = document.getElementById('postsFeed');
       if (!posts || posts.length === 0) {
@@ -456,97 +689,83 @@
     function createPostCardHTML(post) {
       return `
         <article class="surface-card rounded-2xl border border-token shadow-sm hover:shadow-md transition-all overflow-hidden" id="post-${post.id}">
-          
           <div class="p-5 flex items-center justify-between border-b border-token">
             <div class="flex items-center gap-3">
-              <img src="${post.authorAvatar}" alt="${post.author}" class="w-10 h-10 rounded-full object-cover">
+              <img src="${post.avatar || 'https://via.placeholder.com/40'}" alt="${post.author}" class="w-10 h-10 rounded-full object-cover">
               <div>
                 <div class="flex items-center gap-2">
                   <h4 class="font-bold text-primary-token text-xs sm:text-sm">${post.author}</h4>
-                  <span class="bg-red-50 dark:bg-zinc-800 brand-accent text-[10px] font-semibold px-2 py-0.5 rounded-md border border-red-100 dark:border-zinc-700">${post.authorRole || 'Editorial'}</span>
+                  <span class="bg-red-50 dark:bg-zinc-800 brand-accent text-[10px] font-semibold px-2 py-0.5 rounded-md border border-red-100 dark:border-zinc-700">${post.category || 'Geral'}</span>
                 </div>
-                <p class="font-caption text-secondary-token">${post.createdAt}</p>
+                <p class="font-caption text-secondary-token">${post.createdAt ? new Date(post.createdAt).toLocaleDateString('pt-BR') : ''}</p>
               </div>
             </div>
           </div>
 
           <div class="p-5 space-y-3">
             <h3 class="font-h1 text-primary-token leading-snug">${post.title}</h3>
-            <p class="text-secondary-token text-sm leading-relaxed">${post.content}</p>
+            <p class="text-secondary-token text-sm leading-relaxed">${post.text || ''}</p>
             
-            ${post.imageUrl ? `
+            ${post.image ? `
               <div class="mt-3 rounded-xl overflow-hidden bg-zinc-100 dark:bg-zinc-800 border border-token">
-                <img src="${post.imageUrl}" alt="${post.title}" class="w-full max-h-96 object-cover hover:scale-102 transition-transform duration-300" loading="lazy">
+                <img src="${post.image}" alt="${post.title}" class="w-full max-h-96 object-cover hover:scale-102 transition-transform duration-300" loading="lazy">
               </div>
             ` : ''}
           </div>
 
           <div class="px-5 py-4 bg-slate-50/50 dark:bg-zinc-900/40 border-t border-token flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            
-            <!-- 5 Estrelas -->
             <div class="flex items-center gap-2">
               <span class="font-caption text-secondary-token font-semibold">Avaliação:</span>
               <div class="star-rating flex items-center gap-1 text-amber-400 text-base cursor-pointer">
                 ${[1, 2, 3, 4, 5].map(star => `
-                  <i class="${star <= (post.userRating || Math.round(post.rating)) ? 'fa-solid' : 'fa-regular'} fa-star" 
+                  <i class="${star <= Math.round(post.ratingAverage || 0) ? 'fa-solid' : 'fa-regular'} fa-star" 
                      onclick="ratePost(${post.id}, ${star})" 
                      title="Avaliar com ${star} estrela(s)"></i>
                 `).join('')}
               </div>
-              <span id="rating-avg-${post.id}">${post.ratingAverage || '0.0'}</span>
-              <span id="rating-count-${post.id}">(${post.ratingCount || 0} avaliações)</span>
+              <span id="rating-avg-${post.id}" class="font-bold text-xs">${post.ratingAverage || '0.0'}</span>
+              <span id="rating-count-${post.id}" class="text-xs text-secondary-token">(${post.ratingCount || 0})</span>
             </div>
 
-            <!-- Compartilhar -->
             <button onclick="openShareMenu(${post.id})" class="inline-flex items-center justify-center gap-2 surface-card border border-token hover:bg-slate-100 dark:hover:bg-zinc-800 text-primary-token font-medium px-4 py-2 rounded-xl text-xs transition-all active:scale-95">
               <i class="fa-solid fa-share-nodes brand-accent"></i>
               <span>Compartilhar</span>
             </button>
           </div>
-
         </article>
       `;
     }
 
-    // Classificação com feedback
     async function ratePost(postId, rating) {
       try {
         const response = await fetch(`${API_BASE_URL}/posts/${postId}/rate`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ rating: rating })
         });
 
-        if (!response.ok) {
-          throw new Error('Falha ao enviar avaliação');
-        }
-
+        if (!response.ok) throw new Error('Falha ao enviar avaliação');
         const data = await response.json();
         
-        // Atualiza a média e a quantidade de votos na interface
         const ratingAverageEl = document.getElementById(`rating-avg-${postId}`);
         const ratingCountEl = document.getElementById(`rating-count-${postId}`);
 
         if (ratingAverageEl) ratingAverageEl.textContent = data.ratingAverage;
-        if (ratingCountEl) ratingCountEl.textContent = `(${data.ratingCount} avaliações)`;
+        if (ratingCountEl) ratingCountEl.textContent = `(${data.ratingCount})`;
 
-        alert('Obrigado pela sua avaliação!');
+        showToast('Avaliação registrada com sucesso!');
       } catch (error) {
         console.error('Erro ao registrar avaliação:', error);
-        alert('Erro ao enviar sua avaliação. Tente novamente.');
+        showToast('Erro ao enviar avaliação.');
       }
     }
 
-    // Modal de Compartilhamento
     function openShareMenu(postId) {
       const post = currentPostsData.find(p => p.id === postId);
       if (!post) return;
 
       const shareModal = document.getElementById('shareModal');
       const shareList = document.getElementById('shareOptionsList');
-
       const textToShare = `${post.title} - Ágora Vermelha`;
       const currentUrl = window.location.href;
 
@@ -556,48 +775,6 @@
           icon: 'fa-brands fa-whatsapp',
           color: 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 border-emerald-200 dark:border-emerald-800',
           action: () => window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(textToShare + ' ' + currentUrl)}`, '_blank')
-        },
-        {
-          name: 'Status WhatsApp',
-          icon: 'fa-solid fa-circle-notch',
-          color: 'bg-teal-50 dark:bg-teal-950/30 text-teal-600 border-teal-200 dark:border-teal-800',
-          action: () => {
-            copyToClipboard(textToShare + ' ' + currentUrl);
-            showToast('Copiado! Cole no seu Status do WhatsApp.');
-          }
-        },
-        {
-          name: 'Instagram',
-          icon: 'fa-brands fa-instagram',
-          color: 'bg-pink-50 dark:bg-pink-950/30 text-pink-600 border-pink-200 dark:border-pink-800',
-          action: () => {
-            copyToClipboard(currentUrl);
-            showToast('Link copiado para envio no Instagram!');
-          }
-        },
-        {
-          name: 'Stories Instagram',
-          icon: 'fa-solid fa-camera-retro',
-          color: 'bg-purple-50 dark:bg-purple-950/30 text-purple-600 border-purple-200 dark:border-purple-800',
-          action: () => {
-            copyToClipboard(currentUrl);
-            showToast('Link copiado! Adicione a figurinha de link no Stories.');
-          }
-        },
-        {
-          name: 'Facebook',
-          icon: 'fa-brands fa-facebook-f',
-          color: 'bg-blue-50 dark:bg-blue-950/30 text-blue-600 border-blue-200 dark:border-blue-800',
-          action: () => window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(currentUrl)}`, '_blank')
-        },
-        {
-          name: 'Stories Facebook',
-          icon: 'fa-solid fa-clone',
-          color: 'bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 border-indigo-200 dark:border-indigo-800',
-          action: () => {
-            copyToClipboard(currentUrl);
-            showToast('Link copiado! Cole no seu Story do Facebook.');
-          }
         },
         {
           name: 'X (Twitter)',
@@ -611,7 +788,7 @@
           color: 'bg-slate-50 dark:bg-zinc-800 text-secondary-token border-token',
           action: () => {
             copyToClipboard(currentUrl);
-            showToast('Link copiado para a área de transferência!');
+            showToast('Link copiado!');
           }
         }
       ];
@@ -647,7 +824,6 @@
     }
 
     function setupUIEvents() {
-      // Sidebar
       const sidebar = document.getElementById('sidebar');
       const overlay = document.getElementById('sidebarOverlay');
 
@@ -664,26 +840,20 @@
       document.getElementById('closeSidebarBtn').addEventListener('click', closeSidebar);
       overlay.addEventListener('click', closeSidebar);
 
-      // Login Modal
       const loginModal = document.getElementById('loginModal');
-      document.getElementById('loginBtn').addEventListener('click', () => loginModal.classList.remove('hidden'));
-      document.getElementById('closeLoginModal').addEventListener('click', () => loginModal.classList.add('hidden'));
+      document.getElementById('loginBtn').addEventListener('click', () => {
+        resetAuthModal(); 
+        loginModal.classList.remove('hidden');
+      });
 
-      // Share Modal Close
+      document.getElementById('closeLoginModal').addEventListener('click', () => {
+        resetAuthModal(); 
+        loginModal.classList.add('hidden');
+      });
+
       document.getElementById('closeShareModal').addEventListener('click', () => {
         document.getElementById('shareModal').classList.add('hidden');
       });
-    }
-
-    function handleGoogleLogin() {
-      showToast('Autenticação Google em andamento...');
-      document.getElementById('loginModal').classList.add('hidden');
-    }
-
-    function handleFormLogin(e) {
-      e.preventDefault();
-      showToast('Login efetuado com sucesso!');
-      document.getElementById('loginModal').classList.add('hidden');
     }
 
     function showToast(message) {
@@ -694,6 +864,449 @@
       setTimeout(() => {
         toast.classList.add('translate-y-16', 'opacity-0', 'pointer-events-none');
       }, 3500);
+    }
+
+    let isRegisterMode = false;
+
+    function toggleAuthMode() {
+      isRegisterMode = !isRegisterMode;
+      const nameContainer = document.getElementById('nameFieldContainer');
+      const submitBtn = document.getElementById('authSubmitBtn');
+      const toggleText = document.getElementById('toggleAuthText');
+
+      if (isRegisterMode) {
+        nameContainer.classList.remove('hidden');
+        document.getElementById('registerName').setAttribute('required', 'true');
+        submitBtn.textContent = 'Criar Conta';
+        toggleText.textContent = 'Já tem uma conta? Faça login';
+      } else {
+        nameContainer.classList.add('hidden');
+        document.getElementById('registerName').removeAttribute('required');
+        submitBtn.textContent = 'Acessar Conta';
+        toggleText.textContent = 'Não tem uma conta? Cadastre-se';
+      }
+    }
+
+    async function handleEmailAuth(e) {
+      e.preventDefault();
+      const email = document.getElementById('authEmail').value;
+      const password = document.getElementById('authPassword').value;
+      const name = document.getElementById('registerName').value;
+
+      const endpoint = isRegisterMode ? `${API_BASE_URL}/users/register` : `${API_BASE_URL}/users/login`;
+      const payload = isRegisterMode ? { email, password, name } : { email, password };
+
+      try {
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Erro na autenticação.');
+
+        currentUser = data.user;
+        localStorage.setItem('agora-user', JSON.stringify(currentUser));
+        updateHeaderUserUI();
+        
+        resetAuthModal();
+        document.getElementById('loginModal').classList.add('hidden');
+        showToast(data.message || 'Sucesso!');
+
+      } catch (error) {
+        console.error('Erro na autenticação por e-mail:', error);
+        showToast(error.message || 'Erro ao processar solicitação.');
+      }
+    }
+
+    function resetAuthModal() {
+      isRegisterMode = false;
+      const nameContainer = document.getElementById('nameFieldContainer');
+      const submitBtn = document.getElementById('authSubmitBtn');
+      const toggleText = document.getElementById('toggleAuthText');
+      const authForm = document.getElementById('authForm');
+
+      if (nameContainer) nameContainer.classList.add('hidden');
+      const registerName = document.getElementById('registerName');
+      if (registerName) registerName.removeAttribute('required');
+
+      if (submitBtn) submitBtn.textContent = 'Acessar Conta';
+      if (toggleText) toggleText.textContent = 'Não tem uma conta? Cadastre-se';
+      if (authForm) authForm.reset();
+    }
+
+    // Abrir e Fechar o Sidebar de Perfil
+    function openProfileSidebar() {
+      const sidebar = document.getElementById('profileSidebar');
+      const overlay = document.getElementById('sidebarOverlay');
+      const panel = document.getElementById('sidebarPanel');
+
+      sidebar.classList.remove('hidden');
+      setTimeout(() => {
+        overlay.classList.remove('opacity-0');
+        panel.classList.remove('translate-x-full');
+      }, 10);
+
+      loadProfileDataIntoSidebar();
+    }
+
+    function closeProfileSidebar() {
+      const sidebar = document.getElementById('profileSidebar');
+      const overlay = document.getElementById('sidebarOverlay');
+      const panel = document.getElementById('sidebarPanel');
+
+      overlay.classList.add('opacity-0');
+      panel.classList.add('translate-x-full');
+      setTimeout(() => {
+        sidebar.classList.add('hidden');
+      }, 300);
+    }
+
+    function loadProfileDataIntoSidebar() {
+      if (!currentUser || !currentUser.profile) return;
+      currentProfileData = JSON.parse(JSON.stringify(currentUser.profile));
+
+      document.getElementById('sidebarAvatarImg').src = sanitizeGoogleAvatarUrl(currentProfileData.avatar_url) || 'https://via.placeholder.com/150';
+      document.getElementById('profileNameText').textContent = currentProfileData.name || 'Sem nome';
+      document.getElementById('profileNameInput').value = currentProfileData.name || '';
+
+      const bioTextarea = document.getElementById('profileBioTextarea');
+      bioTextarea.value = currentProfileData.bio || '';
+      updateBioCounter();
+
+      if (!Array.isArray(currentProfileData.social_links)) {
+        if (typeof currentProfileData.social_links === 'string') {
+          try {
+            currentProfileData.social_links = JSON.parse(currentProfileData.social_links);
+          } catch (e) {
+            currentProfileData.social_links = [];
+          }
+        } else {
+          currentProfileData.social_links = [];
+        }
+      }
+
+      renderSocialLinks();
+    }
+
+    // Edição Inline de Nome
+    function enableNameEdit() {
+      document.getElementById('nameDisplayContainer').classList.add('hidden');
+      const input = document.getElementById('profileNameInput');
+      input.classList.remove('hidden');
+      input.focus();
+    }
+
+    function handleNameKeydown(event) {
+      if (event.key === 'Enter') {
+        event.target.blur();
+      }
+    }
+
+    async function saveNameEdit() {
+      const input = document.getElementById('profileNameInput');
+      const newName = input.value.trim();
+
+      document.getElementById('profileNameInput').classList.add('hidden');
+      document.getElementById('nameDisplayContainer').classList.remove('hidden');
+
+      if (!newName) {
+        showToast('O nome não pode ficar em branco.');
+        input.value = currentProfileData.name;
+        return;
+      }
+
+      if (newName === currentProfileData.name) return;
+
+      currentProfileData.name = newName;
+      document.getElementById('profileNameText').textContent = newName;
+      await persistProfileUpdate({ name: newName });
+    }
+
+    // Biografia
+    function updateBioCounter() {
+      const textarea = document.getElementById('profileBioTextarea');
+      const counter = document.getElementById('bioCounter');
+      counter.textContent = `${textarea.value.length}/255`;
+    }
+
+    async function saveBioEdit() {
+      const textarea = document.getElementById('profileBioTextarea');
+      const newBio = textarea.value.trim();
+
+      if (newBio === currentProfileData.bio) return;
+      currentProfileData.bio = newBio;
+      await persistProfileUpdate({ bio: newBio });
+    }
+
+    // Redes Sociais
+    function renderSocialLinks() {
+      const container = document.getElementById('socialLinksList');
+      container.innerHTML = '';
+      const links = currentProfileData.social_links || [];
+
+      if (links.length === 0) {
+        container.innerHTML = `<p class="font-caption text-xs text-secondary-token italic">Nenhuma rede social cadastrada.</p>`;
+        return;
+      }
+
+      links.forEach((url, index) => {
+        const parsed = parseSocialUrl(url);
+        const item = document.createElement('div');
+        item.className = 'flex items-center justify-between p-2.5 rounded-xl border border-token surface-card text-xs';
+        item.innerHTML = `
+          <div class="flex items-center space-x-2.5 overflow-hidden">
+            <i class="${parsed.icon} text-sm text-brand"></i>
+            <a href="${url}" target="_blank" class="text-primary-token font-medium truncate hover:underline">${parsed.label}</a>
+          </div>
+          <button onclick="removeSocialLink(${index})" class="text-secondary-token hover:text-red-500 p-1 transition-colors">
+            <i class="fa-solid fa-trash-can text-xs"></i>
+          </button>
+        `;
+        container.appendChild(item);
+      });
+    }
+
+    function parseSocialUrl(url) {
+      try {
+        const urlObj = new URL(url);
+        const hostname = urlObj.hostname.toLowerCase();
+        const pathname = urlObj.pathname;
+
+        if (hostname.includes('github.com')) {
+          const username = pathname.split('/')[1];
+          return { icon: 'fa-brands fa-github', label: username ? `@${username}` : hostname };
+        } else if (hostname.includes('twitter.com') || hostname.includes('x.com')) {
+          const username = pathname.split('/')[1];
+          return { icon: 'fa-brands fa-x-twitter', label: username ? `@${username}` : hostname };
+        } else if (hostname.includes('instagram.com')) {
+          const username = pathname.split('/')[1];
+          return { icon: 'fa-brands fa-instagram', label: username ? `@${username}` : hostname };
+        } else if (hostname.includes('linkedin.com')) {
+          return { icon: 'fa-brands fa-linkedin', label: 'Perfil LinkedIn' };
+        } else if (hostname.includes('youtube.com')) {
+          return { icon: 'fa-brands fa-youtube', label: 'Canal YouTube' };
+        } else if (hostname.includes('facebook.com')) {
+          const username = pathname.split('/')[1];
+          return { icon: 'fa-brands fa-facebook', label: username ? `@${username}` : hostname };
+        }
+      } catch (e) {}
+      return { icon: 'fa-solid fa-link', label: url };
+    }
+
+    async function addSocialLink() {
+      const input = document.getElementById('newSocialInput');
+      const url = input.value.trim();
+      if (!url) return;
+
+      if (!Array.isArray(currentProfileData.social_links)) {
+        currentProfileData.social_links = [];
+      }
+
+      currentProfileData.social_links.push(url);
+      input.value = '';
+
+      renderSocialLinks();
+      await persistProfileUpdate({ social_links: currentProfileData.social_links });
+    }
+
+    async function removeSocialLink(index) {
+      currentProfileData.social_links.splice(index, 1);
+      renderSocialLinks();
+      await persistProfileUpdate({ social_links: currentProfileData.social_links });
+    }
+
+    // ==================== FOTO DE PERFIL & CROPPER ====================
+    function openAvatarPreview(imgSrc) {
+      document.getElementById('modalFullImage').src = imgSrc;
+      document.getElementById('avatarPreviewModal').classList.remove('hidden');
+    }
+
+    function closeAvatarPreview() {
+      document.getElementById('avatarPreviewModal').classList.add('hidden');
+    }
+
+    function openAvatarCropModal() {
+      document.getElementById('avatarCropModal').classList.remove('hidden');
+      document.getElementById('dropArea').classList.remove('hidden');
+      document.getElementById('cropperContainer').classList.add('hidden');
+      
+      if (cropper) {
+        cropper.destroy();
+        cropper = null;
+      }
+      setupDragAndDrop();
+    }
+
+    function closeAvatarCropModal() {
+      document.getElementById('avatarCropModal').classList.add('hidden');
+      if (cropper) {
+        cropper.destroy();
+        cropper = null;
+      }
+    }
+
+    function setupDragAndDrop() {
+      const dropArea = document.getElementById('dropArea');
+      if (!dropArea) return;
+
+      ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropArea.addEventListener(eventName, preventDefaults, false);
+        document.body.addEventListener(eventName, preventDefaults, false);
+      });
+
+      ['dragenter', 'dragover'].forEach(eventName => {
+        dropArea.addEventListener(eventName, () => dropArea.classList.add('border-brand', 'bg-brand/5'), false);
+      });
+
+      ['dragleave', 'drop'].forEach(eventName => {
+        dropArea.addEventListener(eventName, () => dropArea.classList.remove('border-brand', 'bg-brand/5'), false);
+      });
+
+      dropArea.addEventListener('drop', handleDrop, false);
+    }
+
+    function preventDefaults(e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+
+    function handleDrop(e) {
+      const files = e.dataTransfer.files;
+      if (files && files.length > 0) {
+        processImageFile(files[0]);
+      }
+    }
+
+    function handleImageSelected(event) {
+      const file = event.target.files[0];
+      if (file) {
+        processImageFile(file);
+      }
+    }
+
+    function processImageFile(file) {
+      if (!file.type.startsWith('image/')) {
+        showToast('Por favor, selecione um arquivo de imagem válido.');
+        return;
+      }
+
+      selectedImageFile = file;
+      const reader = new FileReader();
+      
+      reader.onload = function(e) {
+        const imageElement = document.getElementById('imageToCrop');
+        imageElement.src = e.target.result;
+
+        document.getElementById('dropArea').classList.add('hidden');
+        document.getElementById('cropperContainer').classList.remove('hidden');
+
+        if (cropper) {
+          cropper.destroy();
+        }
+
+        cropper = new Cropper(imageElement, {
+          aspectRatio: 1,
+          viewMode: 1,
+          dragMode: 'move',
+          autoCropArea: 0.8,
+          restore: false,
+          guides: true,
+          center: true,
+          highlight: false,
+          cropBoxMovable: true,
+          cropBoxResizable: true,
+          toggleDragModeOnDblclick: false,
+        });
+      };
+      
+      reader.readAsDataURL(file);
+    }
+
+    async function cropAndUploadAvatar() {
+      if (!cropper || !currentUser || !currentUser.id) return;
+
+      const canvas = cropper.getCroppedCanvas({
+        width: 300,
+        height: 300,
+        imageSmoothingEnabled: true,
+        imageSmoothingQuality: 'high',
+      });
+
+      canvas.toBlob(async (blob) => {
+        if (!blob) {
+          showToast('Erro ao processar o recorte da imagem.');
+          return;
+        }
+
+        const formData = new FormData();
+        const croppedFile = new File([blob], selectedImageFile?.name || 'avatar.jpg', { type: 'image/jpeg' });
+        formData.append('avatar', croppedFile);
+        formData.append('userId', currentUser.id);
+
+        try {
+          showToast('Enviando foto recortada...');
+          const response = await fetch(`${API_BASE_URL}/users/avatar`, {
+            method: 'POST',
+            body: formData
+          });
+
+          const data = await response.json();
+          if (!response.ok) throw new Error(data.error || 'Erro ao atualizar foto.');
+
+          const cleanUrl = sanitizeGoogleAvatarUrl(data.url);
+          currentProfileData.avatar_url = cleanUrl;
+          document.getElementById('sidebarAvatarImg').src = cleanUrl;
+          
+          currentUser.profile.avatar_url = cleanUrl;
+          localStorage.setItem('agora-user', JSON.stringify(currentUser));
+          updateHeaderUserUI();
+
+          closeAvatarCropModal();
+          showToast('Foto de perfil recortada e atualizada com sucesso!');
+        } catch (err) {
+          console.error(err);
+          showToast(err.message);
+        }
+      }, 'image/jpeg', 0.9);
+    }
+
+    async function persistProfileUpdate(updatedFields) {
+      try {
+        if (!currentUser || !currentUser.id) {
+          throw new Error('Sessão expirada. Faça login novamente.');
+        }
+
+        const payload = { userId: currentUser.id, ...updatedFields };
+
+        const response = await fetch(`${API_BASE_URL}/users/profile`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Erro ao salvar alterações.');
+
+        currentUser.profile = { ...currentUser.profile, ...updatedFields };
+        localStorage.setItem('agora-user', JSON.stringify(currentUser));
+        updateHeaderUserUI();
+
+        showToast('Alterações salvas!');
+      } catch (err) {
+        console.error('Erro em persistProfileUpdate:', err);
+        showToast(err.message);
+      }
+    }
+
+    function sanitizeGoogleAvatarUrl(url) {
+      if (!url) return '';
+      const equalIndex = url.indexOf('=');
+      if (equalIndex !== -1 && url.includes('googleusercontent.com')) {
+        return url.substring(0, equalIndex);
+      }
+      return url;
     }
   </script>
 </body>
