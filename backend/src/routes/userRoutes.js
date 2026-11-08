@@ -4,13 +4,13 @@ const bcrypt = require('bcrypt');
 const pool = require('../config/db');
 const { OAuth2Client } = require('google-auth-library');
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+const { uploadFileToR2, deleteFileFromR2 } = require('./storageService');
 const multer = require('multer');
-const { uploadFileToR2 } = require('./storageService');
 const upload = multer({ storage: multer.memoryStorage() });
 
 // ROTA: Cadastro de Usuário e Perfil (Com e-mail e senha)
 router.post('/register', async (req, res) => {
-  const { email, password, name } = req.body;
+  const { email, password, name, inviteCode } = req.body; // 👈 Recebe o inviteCode
 
   if (!email || !password || !name) {
     return res.status(400).json({ error: 'Preencha todos os campos obrigatórios.' });
@@ -20,36 +20,72 @@ router.post('/register', async (req, res) => {
   try {
     await dbClient.query('BEGIN');
 
-    // Verifica se o e-mail já existe
-    const userExists = await dbClient.query('SELECT id FROM users WHERE email = $1', [email.toLowerCase().trim()]);
+    const cleanEmail = email.toLowerCase().trim();
+
+    const userExists = await dbClient.query('SELECT id FROM users WHERE email = $1', [cleanEmail]);
     if (userExists.rows.length > 0) {
       await dbClient.query('ROLLBACK');
       return res.status(400).json({ error: 'Este e-mail já está cadastrado.' });
     }
 
-    // Hash da senha com bcrypt
     const saltRounds = 10;
     const passwordHash = await bcrypt.hash(password, saltRounds);
 
-    // Insere na tabela users
     const newUser = await dbClient.query(
       'INSERT INTO users (email, password_hash) VALUES ($1, $2) RETURNING id, email, created_at',
-      [email.toLowerCase().trim(), passwordHash]
+      [cleanEmail, passwordHash]
     );
     const userId = newUser.rows[0].id;
 
-    // Cria o perfil correspondente na tabela profiles
+    let assignedRole = 'consumer';
+    let assignedInviterId = null;
+
+    // Se passou um código de convite específico, valida e aplica
+    if (inviteCode) {
+      const inviteRes = await dbClient.query(
+        'SELECT * FROM invitations WHERE code = $1 AND status = $2',
+        [inviteCode, 'pending']
+      );
+
+      if (inviteRes.rows.length > 0) {
+        const invite = inviteRes.rows[0];
+        assignedRole = invite.role_to_grant;
+        assignedInviterId = invite.inviter_id;
+
+        await dbClient.query(
+          'UPDATE invitations SET status = $1, invitee_user_id = $2 WHERE id = $3',
+          ['accepted', userId, invite.id]
+        );
+      }
+    } else {
+      // Fallback: verifica se há convite pendente direto pelo e-mail
+      const inviteCheck = await dbClient.query(
+        'SELECT role_to_grant, inviter_id, id FROM invitations WHERE invitee_email = $1 AND status = $2',
+        [cleanEmail, 'pending']
+      );
+
+      if (inviteCheck.rows.length > 0) {
+        assignedRole = inviteCheck.rows[0].role_to_grant;
+        assignedInviterId = inviteCheck.rows[0].inviter_id;
+
+        await dbClient.query(
+          'UPDATE invitations SET status = $1, invitee_user_id = $2 WHERE id = $3',
+          ['accepted', userId, inviteCheck.rows[0].id]
+        );
+      }
+    }
+
     const defaultAvatar = 'https://via.placeholder.com/150';
     const newProfile = await dbClient.query(
-      `INSERT INTO profiles (user_id, name, avatar_url, bio, social_links) 
-       VALUES ($1, $2, $3, $4, $5) RETURNING name, avatar_url, bio, social_links`,
-      [userId, name, defaultAvatar, 'Membro do Ágora Vermelha', '{}']
+      `INSERT INTO profiles (user_id, name, avatar_url, bio, social_links, role, invited_by) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING name, avatar_url, bio, social_links, role`,
+      [userId, name, defaultAvatar, 'Membro do Ágora Vermelha', '{}', assignedRole, assignedInviterId]
     );
 
     await dbClient.query('COMMIT');
 
     res.status(201).json({
-      message: 'Conta criada com sucesso!',
+      message: 'Conta criada com sucesso e convite aceito!',
       user: {
         id: userId,
         email: newUser.rows[0].email,
@@ -88,7 +124,7 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ error: 'E-mail ou senha incorretos.' });
     }
 
-    const profileResult = await pool.query('SELECT name, avatar_url, bio, social_links FROM profiles WHERE user_id = $1', [user.id]);
+    const profileResult = await pool.query('SELECT name, avatar_url, bio, social_links, role FROM profiles WHERE user_id = $1', [user.id]);
 
     res.json({
       message: 'Login efetuado com sucesso!',
@@ -123,12 +159,13 @@ router.post('/google-login', async (req, res) => {
 
     const payload = ticket.getPayload();
     const { email, name, picture } = payload;
+    const cleanEmail = email.toLowerCase().trim();
     await dbClient.query('BEGIN');
 
     const cleanAvatarUrl = picture ? picture.split('=')[0] : null;
     let userResult = await dbClient.query(
       'SELECT id, email FROM users WHERE email = $1',
-      [email.toLowerCase().trim()]
+      [cleanEmail]
     );
 
     let userId;
@@ -140,19 +177,38 @@ router.post('/google-login', async (req, res) => {
       
       const newUser = await dbClient.query(
         'INSERT INTO users (email, password_hash) VALUES ($1, $2) RETURNING id',
-        [email.toLowerCase().trim(), dummyPasswordHash]
+        [cleanEmail, dummyPasswordHash]
       );
       userId = newUser.rows[0].id;
 
+      // Verifica convite pendente por e-mail no primeiro acesso via Google
+      const inviteCheck = await dbClient.query(
+        'SELECT role_to_grant, inviter_id, id FROM invitations WHERE invitee_email = $1 AND status = $2',
+        [cleanEmail, 'pending']
+      );
+
+      let assignedRole = 'consumer';
+      let assignedInviterId = null;
+
+      if (inviteCheck.rows.length > 0) {
+        assignedRole = inviteCheck.rows[0].role_to_grant;
+        assignedInviterId = inviteCheck.rows[0].inviter_id;
+
+        await dbClient.query(
+          'UPDATE invitations SET status = $1, invitee_user_id = $2 WHERE id = $3',
+          ['accepted', userId, inviteCheck.rows[0].id]
+        );
+      }
+
       await dbClient.query(
-        `INSERT INTO profiles (user_id, name, avatar_url, bio, social_links) 
-         VALUES ($1, $2, $3, $4, $5)`,
-        [userId, name, cleanAvatarUrl, 'Membro do Ágora Vermelha via Google', '{}']
+        `INSERT INTO profiles (user_id, name, avatar_url, bio, social_links, role, invited_by) 
+         VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+        [userId, name, cleanAvatarUrl, 'Membro do Ágora Vermelha via Google', '{}', assignedRole, assignedInviterId]
       );
     }
 
     const profileResult = await dbClient.query(
-      'SELECT name, avatar_url, bio, social_links FROM profiles WHERE user_id = $1',
+      'SELECT name, avatar_url, bio, social_links, role FROM profiles WHERE user_id = $1',
       [userId]
     );
 
@@ -178,7 +234,6 @@ router.post('/google-login', async (req, res) => {
 
 // ROTA: Atualizar Campos do Perfil (Nome, Bio, Redes Sociais)
 router.put('/profile', async (req, res) => {
-  // Recebe o userId juntamente com os campos do corpo da requisição
   const { userId, name, bio, social_links } = req.body; 
 
   if (!userId) {
@@ -235,17 +290,25 @@ router.post('/avatar', upload.single('avatar'), async (req, res) => {
   }
 
   try {
-    // 1. Faz o upload da imagem para o Cloudflare R2 usando o serviço que criamos
+    const oldProfileResult = await pool.query(
+      'SELECT avatar_url FROM profiles WHERE user_id = $1',
+      [userId]
+    );
+    const oldAvatarUrl = oldProfileResult.rows[0]?.avatar_url;
+
     const publicUrl = await uploadFileToR2(file.buffer, file.originalname, file.mimetype);
 
-    // 2. Atualiza a coluna avatar_url na tabela profiles no PostgreSQL
     const updatedProfile = await pool.query(
-      `UPDATE profiles SET avatar_url = $1 WHERE user_id = $2 RETURNING name, avatar_url, bio, social_links`,
+      `UPDATE profiles SET avatar_url = $1 WHERE user_id = $2 RETURNING name, avatar_url, bio, social_links, role`,
       [publicUrl, userId]
     );
 
     if (updatedProfile.rows.length === 0) {
       return res.status(404).json({ error: 'Perfil não encontrado.' });
+    }
+
+    if (oldAvatarUrl) {
+      await deleteFileFromR2(oldAvatarUrl);
     }
 
     res.json({

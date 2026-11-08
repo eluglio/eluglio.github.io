@@ -29,6 +29,7 @@
     "google-auth-library": "^11.3.2",
     "multer": "^2.5.0",
     "node-pg-migrate": "^9.0.0",
+    "nodemailer": "^10.3.1",
     "pg": "^8.23.1"
   }
 }

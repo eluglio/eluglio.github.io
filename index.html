@@ -212,6 +212,17 @@
       </div>
 
       <div class="flex items-center gap-2.5">
+
+        <button id="manageInvitesBtn" onclick="openManageInvitesModal()" class="hidden items-center gap-2 surface-card hover:bg-slate-100 dark:hover:bg-zinc-800 border border-token text-primary-token font-semibold px-3.5 py-2 rounded-xl text-xs transition-all shadow-sm active:scale-95" title="Gerenciar convites e permissões">
+          <i class="fa-solid fa-users-gear text-brand"></i>
+          <span class="hidden sm:inline">Gestão</span>
+        </button>
+
+        <button id="inviteBtn" onclick="openInviteModal()" class="hidden items-center gap-2 bg-brand/10 hover:bg-brand/20 text-brand border border-brand/30 font-semibold px-3.5 py-2 rounded-xl text-xs transition-all shadow-sm active:scale-95" title="Convidar novos membros">
+          <i class="fa-solid fa-user-plus"></i>
+          <span class="hidden sm:inline">Convidar</span>
+        </button>
+
         <button id="themeToggleBtn" onclick="toggleTheme()" class="p-2.5 rounded-xl border border-token text-secondary-token hover:text-primary-token hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors" title="Alternar Tema Claro/Escuro" aria-label="Alternar Tema">
           <i id="themeIcon" class="fa-solid fa-moon text-base"></i>
         </button>
@@ -451,6 +462,257 @@
       </div>
     </div>
   </div>
+  <!-- ==================== MODAL DE CONVITE ==================== -->
+  <div id="inviteModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm hidden">
+    <div class="surface-card border border-token rounded-3xl max-w-md w-full p-6 shadow-2xl relative">
+      <button onclick="closeInviteModal()" class="absolute top-4 right-4 text-secondary-token hover:text-primary-token p-1 rounded-full">
+        <i class="fa-solid fa-xmark text-lg"></i>
+      </button>
+
+      <h3 class="font-h1 text-primary-token text-base font-bold mb-1">Convidar Novo Membro</h3>
+      <p class="font-caption text-secondary-token mb-4">Selecione o nível e a forma de envio do convite.</p>
+
+      <form id="inviteForm" onsubmit="handleSendInvite(event)" class="space-y-4">
+        
+        <!-- Seleção do Nível (Combobox) -->
+        <div>
+          <label class="block font-caption font-semibold text-primary-token mb-1">Nível de Acesso</label>
+          <select id="inviteRole" required class="w-full px-3 py-2.5 rounded-xl border border-token surface-card text-xs text-primary-token focus:outline-none focus:ring-2 focus:ring-red-500/25">
+            <option value="" disabled selected>Carregando níveis permitidos...</option>
+          </select>
+        </div>
+
+        <!-- Tipo de Convite (E-mail, Código ou Usuário Existente) -->
+        <div>
+          <label class="block font-caption font-semibold text-primary-token mb-1">Método de Convite</label>
+          <div class="grid grid-cols-3 gap-2 mb-3">
+            <button type="button" onclick="setInviteMethod('email')" id="methodEmailBtn" class="py-2 text-xs font-semibold rounded-xl border border-brand bg-brand text-white transition-all">E-mail</button>
+            <button type="button" onclick="setInviteMethod('code')" id="methodCodeBtn" class="py-2 text-xs font-medium rounded-xl border border-token text-secondary-token hover:text-primary-token transition-all">Link Único</button>
+            <button type="button" onclick="setInviteMethod('direct')" id="methodDirectBtn" class="py-2 text-xs font-medium rounded-xl border border-token text-secondary-token hover:text-primary-token transition-all">Usuário</button>
+          </div>
+        </div>
+
+        <!-- Campos dinâmicos dependendo do método -->
+        <div id="inviteInputContainer">
+          <!-- Campo para E-mail ou Nome/ID de Usuário Existente -->
+          <div id="fieldEmailGroup">
+            <label class="block font-caption font-semibold text-primary-token mb-1">E-mail do convidado</label>
+            <input type="email" id="inviteEmailInput" placeholder="convidado@email.com" class="w-full px-3.5 py-2.5 rounded-xl border border-token surface-card text-xs text-primary-token focus:outline-none focus:ring-2 focus:ring-red-500/20">
+          </div>
+
+          <div id="fieldDirectGroup" class="hidden">
+            <label class="block font-caption font-semibold text-primary-token mb-1">E-mail ou Nome do Usuário Cadastrado</label>
+            <input type="text" id="inviteUserSearchInput" placeholder="Digite para buscar usuário..." class="w-full px-3.5 py-2.5 rounded-xl border border-token surface-card text-xs text-primary-token focus:outline-none focus:ring-2 focus:ring-red-500/20">
+          </div>
+
+          <div id="fieldCodeGroup" class="hidden">
+            <p class="font-caption text-secondary-token bg-slate-50 dark:bg-zinc-800 p-3 rounded-xl border border-token">
+              Ao gerar o link, um código exclusivo de uso único será criado para você copiar e enviar.
+            </p>
+          </div>
+        </div>
+
+        <button type="submit" class="w-full bg-brand hover:opacity-90 text-white font-medium py-2.5 rounded-xl text-xs sm:text-sm transition-all shadow-md">
+          Enviar / Gerar Convite
+        </button>
+      </form>
+
+      <!-- Área para exibir o link gerado caso seja por código -->
+      <div id="generatedLinkContainer" class="hidden mt-4 pt-4 border-t border-token">
+        <label class="block font-caption font-semibold text-primary-token mb-1">Link de Convite Gerado (Uso Único):</label>
+        <div class="flex gap-2">
+          <input type="text" id="generatedLinkInput" readonly class="flex-1 px-3 py-2 rounded-xl border border-token bg-slate-100 dark:bg-zinc-800 text-xs text-primary-token">
+          <button onclick="copyGeneratedLink()" class="bg-brand text-white px-3 py-2 rounded-xl text-xs font-medium">Copiar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- ==================== MODAL DE ALERTA DE CONVITE PENDENTE ==================== -->
+  <div id="pendingInviteModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm hidden">
+    <div class="surface-card border border-token rounded-3xl max-w-sm w-full p-6 shadow-2xl text-center relative">
+      
+      <div class="w-12 h-12 rounded-2xl bg-brand/10 text-brand flex items-center justify-center mx-auto mb-3 text-xl">
+        <i class="fa-solid fa-award"></i>
+      </div>
+
+      <h3 class="font-h1 text-primary-token text-base font-bold mb-1">Novo Convite de Acesso</h3>
+      <p id="pendingInviteText" class="font-caption text-secondary-token mb-6">
+        Você recebeu um convite para atualizar seu nível na plataforma.
+      </p>
+
+      <div class="flex gap-3">
+        <button onclick="respondPendingInvite('decline')" class="flex-1 py-2.5 rounded-xl border border-token text-secondary-token hover:bg-slate-100 dark:hover:bg-zinc-800 text-xs font-semibold transition-all">
+          Recusar
+        </button>
+        <button onclick="respondPendingInvite('accept')" class="flex-1 bg-brand hover:opacity-90 text-white py-2.5 rounded-xl text-xs font-semibold transition-all shadow-md">
+          Aceitar Convite
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL DE GESTÃO DE CONVITES ==================== -->
+  <div id="manageInvitesModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm hidden">
+    <div class="surface-card border border-token rounded-3xl max-w-3xl w-full p-6 shadow-2xl relative flex flex-col max-h-[85vh]">
+      
+      <!-- Cabeçalho -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-token mb-4 gap-3">
+        <div>
+          <h3 class="font-h1 text-primary-token text-lg font-bold">Gestão de Convites e Membros</h3>
+          <p class="font-caption text-secondary-token">Revogue convites ou rebaixe permissões conforme suas atribuições.</p>
+        </div>
+        
+        <div class="flex items-center justify-between sm:justify-end gap-3">
+          <!-- Slider para exibir/ocultar revogados -->
+          <label class="flex items-center gap-2 cursor-pointer select-none">
+            <span class="font-caption text-xs text-secondary-token">Mostrar revogados</span>
+            <div class="relative">
+              <input type="checkbox" id="showRevokedToggle" onchange="loadManageInvitesTable()" class="sr-only peer">
+              <div class="w-9 h-5 bg-slate-200 dark:bg-zinc-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-brand"></div>
+            </div>
+          </label>
+
+          <button onclick="closeManageInvitesModal()" class="text-secondary-token hover:text-primary-token p-1.5 rounded-full">
+            <i class="fa-solid fa-xmark text-lg"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Tabela Simplificada e Compacta -->
+      <div class="flex-1 overflow-y-auto border border-token rounded-2xl mb-3">
+        <table class="w-full text-left text-xs text-primary-token border-collapse">
+          <thead class="sticky top-0 bg-slate-100 dark:bg-zinc-800 border-b border-token font-semibold uppercase tracking-wider text-secondary-token">
+            <tr>
+              <th class="p-3.5">Membro / Destinatário</th>
+              <th class="p-3.5 text-center">Status</th>
+              <th class="p-3.5 text-center">Notificações</th>
+              <th class="p-3.5 text-right">Ações</th>
+            </tr>
+          </thead>
+          <tbody id="manageInvitesTableBody" class="divide-y divide-token">
+            <!-- Conteúdo injetado via JS -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Legenda no Rodapé -->
+      <div class="pt-3 border-t border-token flex flex-wrap items-center justify-between text-[11px] text-secondary-token gap-2">
+        <span class="font-semibold">Legenda de Níveis:</span>
+        <div class="flex items-center gap-3">
+          <span class="flex items-center gap-1">
+            <span class="w-4 h-4 rounded-md bg-purple-100 dark:bg-purple-950/40 text-purple-600 border border-purple-200 dark:border-purple-800 flex items-center justify-center font-bold text-[9px]">D</span> Dono
+          </span>
+          <span class="flex items-center gap-1">
+            <span class="w-4 h-4 rounded-md bg-blue-100 dark:bg-blue-950/40 text-blue-600 border border-blue-200 dark:border-blue-800 flex items-center justify-center font-bold text-[9px]">A</span> Admin
+          </span>
+          <span class="flex items-center gap-1">
+            <span class="w-4 h-4 rounded-md bg-emerald-100 dark:bg-emerald-950/40 text-emerald-600 border border-emerald-200 dark:border-emerald-800 flex items-center justify-center font-bold text-[9px]">P</span> Publicador
+          </span>
+          <span class="flex items-center gap-1">
+            <span class="w-4 h-4 rounded-md bg-zinc-100 dark:bg-zinc-800 text-secondary-token border border-token flex items-center justify-center font-bold text-[9px]">C</span> Consumidor
+          </span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ==================== MODAL DE ENVIO DE NOTIFICAÇÃO MANUAL ==================== -->
+  <div id="sendNotificationModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm hidden">
+    <div class="surface-card border border-token rounded-3xl max-w-md w-full p-6 md:p-8 shadow-2xl relative">
+      <button onclick="closeSendNotificationModal()" class="absolute top-4 right-4 text-secondary-token hover:text-primary-token p-2 rounded-full">
+        <i class="fa-solid fa-xmark text-lg"></i>
+      </button>
+
+      <div class="mb-5">
+        <div class="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-950/30 text-amber-600 flex items-center justify-center mb-3 text-xl font-bold">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+        </div>
+        <h3 class="font-h1 text-primary-token text-base font-bold">Enviar Notificação ao Usuário</h3>
+        <p id="targetUserNameLabel" class="font-caption text-secondary-token mt-0.5">Destinatário: -</p>
+      </div>
+
+      <form id="sendNotificationForm" onsubmit="handleSendCustomNotification(event)" class="space-y-4">
+        <input type="hidden" id="targetNotificationUserId">
+
+        <!-- Tipo de Notificação -->
+        <div>
+          <label class="block font-caption font-semibold text-primary-token mb-1">Tipo de Notificação</label>
+          <select id="notificationTypeSelect" required class="w-full px-3.5 py-2.5 rounded-xl border border-token surface-card text-xs text-primary-token focus:outline-none focus:ring-2 focus:ring-red-500/20">
+            <option value="Notificação">Notificação</option>
+            <option value="Alerta">Alerta</option>
+            <option value="Advertência">Advertência</option>
+          </select>
+        </div>
+
+        <!-- Mensagem com Contador -->
+        <div>
+          <div class="flex justify-between items-center mb-1">
+            <label class="block font-caption font-semibold text-primary-token">Mensagem</label>
+            <span id="customNotifCounter" class="font-caption text-xs text-secondary-token">0/255</span>
+          </div>
+          <textarea id="notificationMessageInput" maxlength="255" oninput="updateCustomNotifCounter()" rows="4" required placeholder="Digite a mensagem que será exibida para o usuário..." class="w-full p-3 rounded-xl border border-token surface-card text-primary-token text-xs leading-relaxed focus:outline-none focus:ring-2 focus:ring-red-500/20 resize-none"></textarea>
+        </div>
+
+        <button type="submit" class="w-full bg-brand hover:opacity-90 text-white font-medium py-2.5 rounded-xl text-xs sm:text-sm transition-all shadow-md">
+          Enviar Notificação
+        </button>
+      </form>
+    </div>
+  </div>
+<!-- ==================== MODAL DE HISTÓRICO DE NOTIFICAÇÕES DO USUÁRIO ==================== -->
+  <div id="userNotificationsModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm hidden">
+    <div class="surface-card border border-token rounded-3xl max-w-2xl w-full p-6 shadow-2xl relative flex flex-col max-h-[85vh]">
+      
+      <div class="flex items-center justify-between pb-4 border-b border-token mb-4">
+        <div>
+          <h3 id="userNotifModalTitle" class="font-h1 text-primary-token text-lg font-bold">Notificações do Usuário</h3>
+          <p class="font-caption text-secondary-token">Histórico completo de avisos enviados e status de leitura.</p>
+        </div>
+        <button onclick="closeUserNotificationsModal()" class="text-secondary-token hover:text-primary-token p-1.5 rounded-full">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <!-- Tabela com Rolagem -->
+      <div class="flex-1 overflow-y-auto border border-token rounded-2xl">
+        <table class="w-full text-left text-xs text-primary-token border-collapse table-fixed">
+          <thead class="sticky top-0 bg-slate-100 dark:bg-zinc-800 border-b border-token font-semibold uppercase tracking-wider text-secondary-token">
+            <tr>
+              <th class="p-3.5 w-1/4">Tipo / Título</th>
+              <th class="p-3.5 w-5/12">Mensagem</th>
+              <th class="p-3.5 w-1/5 text-center">Data / Hora</th>
+              <th class="p-3.5 w-1/6 text-center">Status</th>
+            </tr>
+          </thead>
+          <tbody id="userNotificationsTableBody" class="divide-y divide-token">
+            <!-- Conteúdo injetado via JS -->
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ==================== MODAL DE AVISO DE NOTIFICAÇÃO (REVOGAÇÃO) ==================== -->
+  <div id="revokeNoticeModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm hidden">
+    <div class="surface-card border border-token rounded-3xl max-w-sm w-full p-6 shadow-2xl text-center relative">
+      
+      <div class="w-12 h-12 rounded-2xl bg-red-50 dark:bg-red-950/30 text-brand flex items-center justify-center mx-auto mb-3 text-xl">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+      </div>
+
+      <h3 id="noticeModalTitle" class="font-h1 text-primary-token text-base font-bold mb-1">Aviso do Sistema</h3>
+      <p id="noticeModalText" class="font-caption text-secondary-token mb-6">
+        
+      </p>
+
+      <button onclick="confirmRevokeNotice()" class="w-full bg-brand hover:opacity-90 text-white py-2.5 rounded-xl text-xs font-semibold transition-all shadow-md">
+        Entendido
+      </button>
+    </div>
+  </div>
 
   <!-- ==================== TOAST DE NOTIFICAÇÃO ==================== -->
   <div id="toast" class="fixed bottom-5 right-5 z-50 bg-zinc-900 text-white text-xs font-medium px-4 py-3 rounded-2xl shadow-xl flex items-center gap-2 transform translate-y-16 opacity-0 pointer-events-none">
@@ -477,8 +739,11 @@
       initTheme();
       setupUIEvents();
       checkSavedUser();
+      checkUserNotifications();
       fetchPosts();
       initGoogleAuth();
+      checkUrlForInvite();
+      startNotificationPolling();
     });
 
     // Inicializador do Botão Oficial do Google
@@ -519,6 +784,9 @@
         currentUser = data.user;
         localStorage.setItem('agora-user', JSON.stringify(currentUser));
         updateHeaderUserUI();
+        checkPendingInvites();
+        checkUserNotifications();
+        startNotificationPolling();
         showToast(`Bem-vindo(a), ${currentUser.profile.name}!`);
 
       } catch (error) {
@@ -533,18 +801,22 @@
         try {
           currentUser = JSON.parse(saved);
           updateHeaderUserUI();
+          checkPendingInvites();
         } catch (e) {
           localStorage.removeItem('agora-user');
         }
       }
     }
 
-    function updateHeaderUserUI() {
+function updateHeaderUserUI() {
       const container = document.getElementById('userHeaderContainer');
+      const inviteBtn = document.getElementById('inviteBtn');
+      const manageBtn = document.getElementById('manageInvitesBtn');
       if (!container) return;
 
       if (currentUser && currentUser.profile) {
         const cleanPictureUrl = sanitizeGoogleAvatarUrl(currentUser.profile.avatar_url);
+        
         container.innerHTML = `
           <div class="flex items-center gap-2.5">
             <img onclick="openProfileSidebar();" src="${cleanPictureUrl || 'https://via.placeholder.com/40'}" alt="${currentUser.profile.name}" class="w-9 h-9 rounded-full object-cover border border-token shadow-sm cursor-pointer" title="Abrir perfil">
@@ -554,6 +826,27 @@
             </button>
           </div>
         `;
+
+        const userRole = currentUser.profile.role;
+
+        // Exibe o botão de convite apenas para 'owner' e 'admin'
+        if ((userRole === 'owner' || userRole === 'admin') && inviteBtn) {
+          inviteBtn.classList.remove('hidden');
+          inviteBtn.classList.add('flex');
+        } else if (inviteBtn) {
+          inviteBtn.classList.add('hidden');
+          inviteBtn.classList.remove('flex');
+        }
+
+        // Exibe o botão de gestão apenas para 'owner' e 'admin'
+        if ((userRole === 'owner' || userRole === 'admin') && manageBtn) {
+          manageBtn.classList.remove('hidden');
+          manageBtn.classList.add('flex');
+        } else if (manageBtn) {
+          manageBtn.classList.add('hidden');
+          manageBtn.classList.remove('flex');
+        }
+
       } else {
         container.innerHTML = `
           <button id="loginBtn" onclick="document.getElementById('loginModal').classList.remove('hidden')" class="flex items-center gap-2 bg-brand hover:opacity-90 text-white font-medium px-4 py-2 rounded-xl text-xs sm:text-sm transition-all shadow-sm active:scale-95">
@@ -562,6 +855,16 @@
             <span class="sm:hidden">Entrar</span>
           </button>
         `;
+
+        // Oculta os botões administrativos se não houver usuário logado
+        if (inviteBtn) {
+          inviteBtn.classList.add('hidden');
+          inviteBtn.classList.remove('flex');
+        }
+        if (manageBtn) {
+          manageBtn.classList.add('hidden');
+          manageBtn.classList.remove('flex');
+        }
       }
     }
 
@@ -894,7 +1197,9 @@
       const name = document.getElementById('registerName').value;
 
       const endpoint = isRegisterMode ? `${API_BASE_URL}/users/register` : `${API_BASE_URL}/users/login`;
-      const payload = isRegisterMode ? { email, password, name } : { email, password };
+      const payload = isRegisterMode 
+        ? { email, password, name, inviteCode: window.pendingInviteCode || null } 
+        : { email, password };
 
       try {
         const response = await fetch(endpoint, {
@@ -909,7 +1214,9 @@
         currentUser = data.user;
         localStorage.setItem('agora-user', JSON.stringify(currentUser));
         updateHeaderUserUI();
-        
+        checkPendingInvites();
+        checkUserNotifications();
+        startNotificationPolling();
         resetAuthModal();
         document.getElementById('loginModal').classList.add('hidden');
         showToast(data.message || 'Sucesso!');
@@ -1307,6 +1614,662 @@
         return url.substring(0, equalIndex);
       }
       return url;
+    }
+
+    // Função para carregar dinamicamente os níveis permitidos do backend
+    async function loadAllowedInviteRoles() {
+      if (!currentUser || !currentUser.id) return;
+
+      const roleSelect = document.getElementById('inviteRole');
+      if (!roleSelect) return;
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/invitations/allowed-roles/${currentUser.id}`);
+        const data = await response.json();
+
+        if (!response.ok) throw new Error(data.error || 'Erro ao carregar níveis.');
+
+        // Preenche o select com os papéis retornados pela API
+        roleSelect.innerHTML = data.roles.map(r => `
+          <option value="${r.value}">${r.label}</option>
+        `).join('');
+
+      } catch (err) {
+        console.error('Erro ao buscar papéis de convite:', err);
+        roleSelect.innerHTML = `<option value="" disabled>Erro ao carregar opções</option>`;
+      }
+    }
+
+    function openInviteModal() {
+      const userRole = currentUser?.profile?.role;
+      
+      // Garante que apenas owners e admins conseguem abrir pela interface
+      if (!currentUser || !currentUser.profile || (userRole !== 'owner' && userRole !== 'admin')) {
+        showToast('Você não tem permissão para enviar convites.');
+        return;
+      }
+      
+      const modal = document.getElementById('inviteModal');
+      if (modal) {
+        modal.classList.remove('hidden');
+        loadAllowedInviteRoles(); // 👈 Busca os papéis permitidos no backend ao abrir
+        setInviteMethod('email'); // Reseta para o padrão e-mail
+      }
+    }
+
+    function closeInviteModal() {
+      const modal = document.getElementById('inviteModal');
+      if (modal) {
+        modal.classList.add('hidden');
+      }
+    }
+
+    // ==================== LÓGICA DE CONVITES ====================
+    let currentInviteMethod = 'email';
+
+    function setInviteMethod(method) {
+      currentInviteMethod = method;
+      
+      const emailBtn = document.getElementById('methodEmailBtn');
+      const codeBtn = document.getElementById('methodCodeBtn');
+      const directBtn = document.getElementById('methodDirectBtn');
+
+      const emailGroup = document.getElementById('fieldEmailGroup');
+      const codeGroup = document.getElementById('fieldCodeGroup');
+      const directGroup = document.getElementById('fieldDirectGroup');
+      const linkContainer = document.getElementById('generatedLinkContainer');
+
+      // Reseta classes dos botões
+      [emailBtn, codeBtn, directBtn].forEach(btn => {
+        btn.className = 'py-2 text-xs font-medium rounded-xl border border-token text-secondary-token hover:text-primary-token transition-all';
+      });
+
+      // Esconde todos os grupos de inputs
+      emailGroup.classList.add('hidden');
+      codeGroup.classList.add('hidden');
+      directGroup.classList.add('hidden');
+      if (linkContainer) linkContainer.classList.add('hidden');
+
+      // Ativa o botão selecionado e mostra o campo correspondente
+      if (method === 'email') {
+        emailBtn.className = 'py-2 text-xs font-semibold rounded-xl border border-brand bg-brand text-white transition-all';
+        emailGroup.classList.remove('hidden');
+      } else if (method === 'code') {
+        codeBtn.className = 'py-2 text-xs font-semibold rounded-xl border border-brand bg-brand text-white transition-all';
+        codeGroup.classList.remove('hidden');
+      } else if (method === 'direct') {
+        directBtn.className = 'py-2 text-xs font-semibold rounded-xl border border-brand bg-brand text-white transition-all';
+        directGroup.classList.remove('hidden');
+      }
+    }
+
+    async function handleSendInvite(event) {
+      event.preventDefault();
+
+      if (!currentUser || !currentUser.id) {
+        showToast('Sessão expirada. Faça login novamente.');
+        return;
+      }
+
+      const roleToGrant = document.getElementById('inviteRole').value;
+      const inviteEmailInput = document.getElementById('inviteEmailInput');
+      const inviteUserSearchInput = document.getElementById('inviteUserSearchInput');
+
+      let inviteeEmail = null;
+      let inviteeUserId = null;
+
+      if (currentInviteMethod === 'email') {
+        inviteeEmail = inviteEmailInput ? inviteEmailInput.value.trim() : null;
+        if (!inviteeEmail) {
+          showToast('Por favor, informe o e-mail do convidado.');
+          return;
+        }
+      } else if (currentInviteMethod === 'direct') {
+        // Se usar busca de usuário direto, ajuste conforme a sua implementação de busca
+        inviteeUserId = inviteUserSearchInput ? inviteUserSearchInput.value.trim() : null;
+      }
+
+      const payload = {
+        userId: currentUser.id,
+        roleToGrant: roleToGrant,
+        inviteType: currentInviteMethod,
+        inviteeEmail: inviteeEmail,
+        inviteeUserId: inviteeUserId ? parseInt(inviteeUserId) : null
+      };
+
+      try {
+        showToast('Gerando e enviando convite...');
+        
+        const response = await fetch(`${API_BASE_URL}/invitations/create`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Erro ao criar convite.');
+
+        showToast(data.message || 'Convite processado com sucesso!');
+
+        // Se houver um link gerado (por e-mail ou código), exibe na interface para cópia
+        if (data.invite && data.invite.inviteLink) {
+          const linkContainer = document.getElementById('generatedLinkContainer');
+          const linkInput = document.getElementById('generatedLinkInput');
+          if (linkContainer && linkInput) {
+            linkInput.value = data.invite.inviteLink;
+            linkContainer.classList.remove('hidden');
+          }
+        } else {
+          closeInviteModal();
+        }
+
+        // Limpa os campos
+        if (inviteEmailInput) inviteEmailInput.value = '';
+        if (inviteUserSearchInput) inviteUserSearchInput.value = '';
+
+      } catch (err) {
+        console.error('Erro ao enviar convite:', err);
+        showToast(err.message || 'Erro ao processar convite.');
+      }
+    }
+
+    function copyGeneratedLink() {
+      const linkInput = document.getElementById('generatedLinkInput');
+      if (!linkInput || !linkInput.value) return;
+
+      copyToClipboard(linkInput.value);
+      showToast('Link de convite copiado para a área de transferência!');
+    }
+
+    // Função para verificar se o usuário abriu a página através de um link de convite
+    async function checkUrlForInvite() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const inviteCode = urlParams.get('invite');
+
+      if (!inviteCode) return;
+
+      const cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
+      window.history.replaceState({ path: cleanUrl }, '', cleanUrl);
+
+      try {
+        showToast('Validando convite...');
+        const response = await fetch(`${API_BASE_URL}/invitations/details/${inviteCode}`);
+        const data = await response.json();
+
+        if (!response.ok) throw new Error(data.error || 'Convite inválido.');
+
+        // Salva o código temporariamente para usar no registro
+        window.pendingInviteCode = inviteCode;
+
+        // Abre o modal de login/cadastro
+        const loginModal = document.getElementById('loginModal');
+        if (loginModal) {
+          loginModal.classList.remove('hidden');
+          
+          // Força o modo de cadastro
+          if (!isRegisterMode) {
+            toggleAuthMode();
+          }
+
+          // Preenche o e-mail e bloqueia o input para garantir que use o e-mail convidado
+          const emailInput = document.getElementById('authEmail');
+          if (emailInput) {
+            emailInput.value = data.email;
+            emailInput.setAttribute('readonly', 'true');
+            emailInput.classList.add('bg-slate-100', 'dark:bg-zinc-800', 'cursor-not-allowed');
+          }
+
+          showToast(`Convite identificado para ${data.email}. Crie sua senha para concluir!`);
+        }
+
+      } catch (err) {
+        console.error('Erro ao processar link de convite:', err);
+        showToast(err.message || 'Link de convite inválido ou expirado.');
+      }
+    }
+
+    const ROLE_LABELS = {
+      publisher: 'Publicador',
+      admin: 'Administrador',
+      owner: 'Dono'
+    };
+
+    let activePendingInvite = null;
+
+    // Verificar se o usuário logado possui convite pendente
+    async function checkPendingInvites() {
+      if (!currentUser || !currentUser.id) return;
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/invitations/pending/${currentUser.id}`);
+        const data = await response.json();
+
+        if (response.ok && data.hasPendingInvite) {
+          activePendingInvite = data.invite;
+
+          const roleName = ROLE_LABELS[data.invite.role_to_grant] || data.invite.role_to_grant;
+          const inviterName = data.invite.inviter_name || 'Um administrador';
+
+          document.getElementById('pendingInviteText').innerHTML = `
+            <strong>${inviterName}</strong> convidou você para se tornar <strong>${roleName}</strong> no Ágora Vermelha.
+          `;
+
+          document.getElementById('pendingInviteModal').classList.remove('hidden');
+        }
+      } catch (err) {
+        console.error('Erro ao verificar convites pendentes:', err);
+      }
+    }
+
+    // Responder ao convite (Aceitar/Recusar)
+    async function respondPendingInvite(action) {
+      if (!activePendingInvite || !currentUser) return;
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/invitations/respond`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            inviteId: activePendingInvite.id,
+            userId: currentUser.id,
+            action: action
+          })
+        });
+
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Erro ao responder convite.');
+
+        document.getElementById('pendingInviteModal').classList.add('hidden');
+        showToast(data.message);
+
+        // Se aceitou, atualiza o perfil em memória e a interface
+        if (action === 'accept' && data.newRole) {
+          currentUser.profile.role = data.newRole;
+          localStorage.setItem('agora-user', JSON.stringify(currentUser));
+          updateHeaderUserUI();
+        }
+
+        activePendingInvite = null;
+
+      } catch (err) {
+        console.error('Erro ao processar convite:', err);
+        showToast(err.message);
+      }
+    }
+
+    // Abrir o Modal de Gestão
+    async function openManageInvitesModal() {
+      if (!currentUser || !currentUser.id) return;
+
+      const modal = document.getElementById('manageInvitesModal');
+      modal.classList.remove('hidden');
+
+      await loadManageInvitesTable();
+    }
+
+    function closeManageInvitesModal() {
+      document.getElementById('manageInvitesModal').classList.add('hidden');
+    }
+
+    // Carregar os dados na tabela do Modal
+    async function loadManageInvitesTable() {
+      const tbody = document.getElementById('manageInvitesTableBody');
+      tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-secondary-token">Carregando convites...</td></tr>`;
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/invitations/manage/${currentUser.id}`);
+        const data = await response.json();
+
+        if (!response.ok) throw new Error(data.error || 'Erro ao carregar dados.');
+
+        if (!data.invites || data.invites.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-secondary-token">Nenhum convite encontrado.</td></tr>`;
+          return;
+        }
+
+        const showRevoked = document.getElementById('showRevokedToggle')?.checked || false;
+
+        const filteredInvites = showRevoked 
+          ? data.invites 
+          : data.invites.filter(item => item.status !== 'revoked');
+
+        if (filteredInvites.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-secondary-token">Nenhum convite encontrado com os filtros atuais.</td></tr>`;
+          return;
+        }
+
+        // Mapeamento de Badges de Letra Única
+        const roleLetterBadges = {
+          owner: { letter: 'D', style: 'bg-purple-100 dark:bg-purple-950/40 text-purple-600 border-purple-200 dark:border-purple-800', title: 'Dono' },
+          admin: { letter: 'A', style: 'bg-blue-100 dark:bg-blue-950/40 text-blue-600 border-blue-200 dark:border-blue-800', title: 'Administrador' },
+          publisher: { letter: 'P', style: 'bg-emerald-100 dark:bg-emerald-950/40 text-emerald-600 border-emerald-200 dark:border-emerald-800', title: 'Publicador' },
+          consumer: { letter: 'C', style: 'bg-zinc-100 dark:bg-zinc-800 text-secondary-token border-token', title: 'Consumidor' }
+        };
+
+        const statusBadges = {
+          pending: '<span class="px-2 py-0.5 text-[10px] rounded-md font-semibold bg-amber-50 dark:bg-amber-950/30 text-amber-600 border border-amber-200 dark:border-amber-800">Pendente</span>',
+          accepted: '<span class="px-2 py-0.5 text-[10px] rounded-md font-semibold bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 border border-emerald-200 dark:border-emerald-800">Aceito</span>',
+          declined: '<span class="px-2 py-0.5 text-[10px] rounded-md font-semibold bg-zinc-100 dark:bg-zinc-800 text-zinc-500 border border-token">Recusado</span>',
+          revoked: '<span class="px-2 py-0.5 text-[10px] rounded-md font-semibold bg-red-50 dark:bg-red-950/30 text-red-600 border border-red-200 dark:border-red-800">Revogado</span>'
+        };
+
+        tbody.innerHTML = filteredInvites.map(item => {
+          const avatarSrc = item.invitee_avatar ? sanitizeGoogleAvatarUrl(item.invitee_avatar) : 'https://via.placeholder.com/40';
+          
+          const roleConfig = roleLetterBadges[item.role_to_grant] || roleLetterBadges.consumer;
+
+          // Célula de notificações agregadas
+          const counts = item.notification_counts || {};
+          const countEntries = Object.entries(counts);
+          
+          let notificationsCellHTML = `<span class="text-secondary-token text-[11px] italic">-</span>`;
+          if (countEntries.length > 0) {
+            notificationsCellHTML = `
+              <div class="flex flex-wrap justify-center gap-1 cursor-pointer hover:opacity-80 transition-opacity" title="Clique para ver o histórico" onclick="openUserNotificationsModal(${item.invitee_user_id}, '${encodeURIComponent(item.invitee_name || item.invitee_email)}')">
+                ${countEntries.map(([type, qty]) => `
+                  <span class="px-1.5 py-0.5 text-[10px] rounded font-medium bg-slate-100 dark:bg-zinc-800 text-primary-token border border-token">
+                    ${type}: <b>${qty}</b>
+                  </span>
+                `).join('')}
+              </div>
+            `;
+          }
+
+          const actionTooltip = item.status === 'accepted' ? 'Revogar acesso (Rebaixar)' : 'Revogar convite';
+
+          return `
+            <tr class="hover:bg-slate-50 dark:hover:bg-zinc-800/40 transition-colors">
+              <!-- Convidado + Letra do Nível + E-mail e Convidador abaixo -->
+              <td class="p-3">
+                <div class="flex items-center gap-2.5">
+                  <img src="${avatarSrc}" alt="Avatar" class="w-8 h-8 rounded-full object-cover border border-token shadow-sm">
+                  <div>
+                    <div class="flex items-center gap-1.5">
+                      <span class="font-semibold text-primary-token text-xs">${item.invitee_name || item.invitee_email || 'Link Genérico'}</span>
+                      <span class="w-4 h-4 rounded-md ${roleConfig.style} flex items-center justify-center font-bold text-[9px]" title="Nível concedido: ${roleConfig.title}">
+                        ${roleConfig.letter}
+                      </span>
+                    </div>
+                    <div class="font-caption text-secondary-token text-[11px] leading-tight">
+                      ${item.invitee_email ? `${item.invitee_email} • ` : ''} <span class="opacity-75">Convidado por: ${item.inviter_name}</span>
+                    </div>
+                  </div>
+                </div>
+              </td>
+
+              <!-- Status -->
+              <td class="p-3 text-center">${statusBadges[item.status] || item.status}</td>
+
+              <!-- Notificações -->
+              <td class="p-3 text-center">${notificationsCellHTML}</td>
+
+              <!-- Ações (Apenas ícones) -->
+              <td class="p-3 text-right">
+                <div class="flex items-center justify-end gap-1.5">
+                  ${item.status !== 'revoked' && item.invitee_user_id ? `
+                    <button onclick="openSendNotificationModal(${item.invitee_user_id}, '${encodeURIComponent(item.invitee_name || item.invitee_email)}')" class="p-1.5 rounded-lg bg-amber-50 dark:bg-amber-950/30 text-amber-600 hover:bg-amber-100 border border-amber-200 dark:border-amber-800 transition-all shadow-sm active:scale-95" title="Enviar Notificação / Alerta">
+                      <i class="fa-solid fa-triangle-exclamation text-xs"></i>
+                    </button>
+                  ` : ''}
+
+                  ${item.status !== 'revoked' && item.canRevoke ? `
+                    <button onclick="handleRevokeInvite(${item.id})" class="p-1.5 rounded-lg bg-red-50 dark:bg-red-950/30 hover:bg-red-100 text-red-600 border border-red-200 dark:border-red-800 transition-all shadow-sm active:scale-95" title="${actionTooltip}">
+                      <i class="fa-solid fa-user-minus text-xs"></i>
+                    </button>
+                  ` : (!item.canRevoke && item.status !== 'revoked' ? `
+                    <span class="text-secondary-token text-[10px] italic">Sem permissão</span>
+                  ` : '')}
+                </div>
+              </td>
+            </tr>
+          `;
+        }).join('');
+
+      } catch (err) {
+        console.error(err);
+        tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-red-500">Erro ao carregar tabela.</td></tr>`;
+      }
+    }
+    // Ação de revogar ou rebaixar
+    async function handleRevokeInvite(inviteId) {
+      if (!confirm('Tem certeza que deseja revogar este convite/rebaixar este membro?')) return;
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/invitations/revoke`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            inviteId: inviteId,
+            requesterUserId: currentUser.id
+          })
+        });
+
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Erro ao revogar.');
+
+        showToast(data.message);
+        await loadManageInvitesTable();
+
+      } catch (err) {
+        console.error('Erro ao revogar convite:', err);
+        showToast(err.message);
+      }
+    }
+    let currentUnreadNotifications = [];
+
+    // Função para verificar notificações não lidas
+    async function checkUserNotifications() {
+      if (!currentUser || !currentUser.id) return;
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/notifications/unread/${currentUser.id}`);
+        const data = await response.json();
+
+        if (response.ok && data.notifications && data.notifications.length > 0) {
+          currentUnreadNotifications = data.notifications;
+
+          const notificacoes = data.notifications[0];
+          console.log(notificacoes);
+          console.log(notificacoes.title);
+          console.log(notificacoes.message);
+
+          if (notificacoes) {
+            document.getElementById('noticeModalTitle').textContent = notificacoes.title;
+            document.getElementById('noticeModalText').innerHTML = notificacoes.message;
+            document.getElementById('revokeNoticeModal').classList.remove('hidden');
+          }
+        }
+      } catch (err) {
+        console.error('Erro ao consultar notificações:', err);
+      }
+    }
+
+    // Ação do botão "Entendido": marca como lida e recarrega a tela
+    async function confirmRevokeNotice() {
+      if (currentUser && currentUser.id) {
+        const revokeIds = currentUnreadNotifications
+          .filter(n => n.type === 'role_revoked')
+          .map(n => n.id);
+
+        try {
+          await fetch(`${API_BASE_URL}/notifications/mark-read`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              userId: currentUser.id,
+              notificationIds: revokeIds
+            })
+          });
+        } catch (e) {
+          console.error('Erro ao marcar notificação como lida:', e);
+        }
+      }
+
+      window.location.reload();
+    }
+
+    let notificationInterval = null;
+
+    // Inicia a verificação periódica de notificações (a cada 10 segundos)
+    function startNotificationPolling() {
+      if (notificationInterval) return; // Evita múltiplos intervalos duplicados
+
+      // Executa uma vez logo ao iniciar
+      checkUserNotifications();
+
+      // Configura o timer para rodar a cada 10 segundos
+      notificationInterval = setInterval(() => {
+        checkUserNotifications();
+      }, 10000);
+    }
+
+    // Para a verificação ao sair da conta
+    function stopNotificationPolling() {
+      if (notificationInterval) {
+        clearInterval(notificationInterval);
+        notificationInterval = null;
+      }
+    }
+
+    // Abrir o modal de envio de notificação manual
+    function openSendNotificationModal(userId, userNameEncoded) {
+      const userName = decodeURIComponent(userNameEncoded);
+      document.getElementById('targetNotificationUserId').value = userId;
+      document.getElementById('targetUserNameLabel').textContent = `Destinatário: ${userName}`;
+      document.getElementById('notificationMessageInput').value = '';
+      document.getElementById('notificationTypeSelect').selectedIndex = 0;
+      updateCustomNotifCounter();
+
+      document.getElementById('sendNotificationModal').classList.remove('hidden');
+    }
+
+    function closeSendNotificationModal() {
+      document.getElementById('sendNotificationModal').classList.add('hidden');
+    }
+
+    // Contador de caracteres (até 255)
+    function updateCustomNotifCounter() {
+      const textarea = document.getElementById('notificationMessageInput');
+      const counter = document.getElementById('customNotifCounter');
+      if (textarea && counter) {
+        counter.textContent = `${textarea.value.length}/255`;
+      }
+    }
+
+    // Enviar a notificação customizada para o backend
+    async function handleSendCustomNotification(e) {
+      e.preventDefault();
+
+      const targetUserId = document.getElementById('targetNotificationUserId').value;
+      const type = document.getElementById('notificationTypeSelect').value;
+      const message = document.getElementById('notificationMessageInput').value.trim();
+
+      if (!targetUserId || !message) return;
+
+      // Define títulos padrão com base no tipo selecionado
+      const titles = {
+        'Notificação': 'Notificação da Administração',
+        'Alerta': 'Alerta Importante',
+        'Advertência': 'Advertência do Sistema'
+      };
+
+      try {
+        showToast('Enviando notificação...');
+
+        const response = await fetch(`${API_BASE_URL}/notifications/send-custom`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            senderUserId: currentUser.id,
+            targetUserId: parseInt(targetUserId),
+            type: type,
+            title: titles[type] || 'Aviso',
+            message: message
+          })
+        });
+
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Erro ao enviar notificação.');
+
+        showToast(data.message);
+        closeSendNotificationModal();
+
+      } catch (err) {
+        console.error('Erro ao enviar notificação customizada:', err);
+        showToast(err.message || 'Erro ao processar envio.');
+      }
+    }
+
+    // Abrir modal de histórico de notificações de um usuário específico
+    async function openUserNotificationsModal(targetUserId, userNameEncoded) {
+      if (!targetUserId) {
+        showToast('Este usuário ainda não possui cadastro ativo.');
+        return;
+      }
+
+      const userName = decodeURIComponent(userNameEncoded);
+      document.getElementById('userNotifModalTitle').textContent = `Notificações de ${userName}`;
+      
+      const tbody = document.getElementById('userNotificationsTableBody');
+      tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-secondary-token">Carregando notificações...</td></tr>`;
+
+      document.getElementById('userNotificationsModal').classList.remove('hidden');
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/notifications/user/${targetUserId}`);
+        const data = await response.json();
+
+        if (!response.ok) throw new Error(data.error || 'Erro ao carregar notificações.');
+
+        if (!data.notifications || data.notifications.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-secondary-token">Nenhuma notificação encontrada para este usuário.</td></tr>`;
+          return;
+        }
+
+        tbody.innerHTML = data.notifications.map(n => {
+          const dateObj = new Date(n.created_at);
+          const dateStr = dateObj.toLocaleDateString('pt-BR');
+          const timeStr = dateObj.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
+          const statusBadge = n.is_read 
+            ? '<span class="px-2 py-0.5 text-[10px] rounded-md font-semibold bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 border border-emerald-200 dark:border-emerald-800">Lida</span>'
+            : '<span class="px-2 py-0.5 text-[10px] rounded-md font-semibold bg-amber-50 dark:bg-amber-950/30 text-amber-600 border border-amber-200 dark:border-amber-800">Não lida</span>';
+
+          return `
+            <tr class="hover:bg-slate-50 dark:hover:bg-zinc-800/40 transition-colors">
+              <!-- Tipo / Título -->
+              <td class="p-3.5 align-top">
+                <div class="font-semibold text-primary-token">${n.type}</div>
+                <div class="font-caption text-secondary-token text-[11px] leading-tight">${n.title}</div>
+              </td>
+
+              <!-- Mensagem com quebra de linha e largura ajustada -->
+              <td class="p-3.5 align-top text-secondary-token leading-relaxed whitespace-normal break-words">
+                ${n.message}
+              </td>
+
+              <!-- Data em cima / Hora embaixo -->
+              <td class="p-3.5 align-top text-center text-secondary-token whitespace-nowrap">
+                <div class="font-medium text-primary-token">${dateStr}</div>
+                <div class="text-[11px] opacity-75">${timeStr}</div>
+              </td>
+
+              <!-- Status -->
+              <td class="p-3.5 align-top text-center">
+                ${statusBadge}
+              </td>
+            </tr>
+          `;
+        }).join('');
+
+      } catch (err) {
+        console.error('Erro ao buscar histórico:', err);
+        tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-red-500">Erro ao carregar histórico de notificações.</td></tr>`;
+      }
+    }
+
+    function closeUserNotificationsModal() {
+      document.getElementById('userNotificationsModal').classList.add('hidden');
     }
   </script>
 </body>
