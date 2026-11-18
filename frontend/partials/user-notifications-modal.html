@@ -1,0 +1,33 @@
+<!-- ==================== MODAL DE HISTÓRICO DE NOTIFICAÇÕES DO USUÁRIO ==================== -->
+  <div id="userNotificationsModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm hidden">
+    <div class="surface-card border border-token rounded-3xl max-w-2xl w-full p-6 shadow-2xl relative flex flex-col max-h-[85vh]">
+      
+      <div class="flex items-center justify-between pb-4 border-b border-token mb-4">
+        <div>
+          <h3 id="userNotifModalTitle" class="font-h1 text-primary-token text-lg font-bold">Notificações do Usuário</h3>
+          <p class="font-caption text-secondary-token">Histórico completo de avisos enviados e status de leitura.</p>
+        </div>
+        <button onclick="closeUserNotificationsModal()" class="text-secondary-token hover:text-primary-token p-1.5 rounded-full">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <!-- Tabela com Rolagem -->
+      <div class="flex-1 overflow-y-auto border border-token rounded-2xl">
+        <table class="w-full text-left text-xs text-primary-token border-collapse table-fixed">
+          <thead class="sticky top-0 bg-slate-100 dark:bg-zinc-800 border-b border-token font-semibold uppercase tracking-wider text-secondary-token">
+            <tr>
+              <th class="p-3.5 w-1/4">Tipo / Título</th>
+              <th class="p-3.5 w-5/12">Mensagem</th>
+              <th class="p-3.5 w-1/5 text-center">Data / Hora</th>
+              <th class="p-3.5 w-1/6 text-center">Status</th>
+            </tr>
+          </thead>
+          <tbody id="userNotificationsTableBody" class="divide-y divide-token">
+            <!-- Conteúdo injetado via JS -->
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>

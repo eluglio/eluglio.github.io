@@ -1,0 +1,50 @@
+  <!-- ==================== MODAL DE LOGIN ==================== -->
+  <div id="loginModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm hidden">
+    <div class="surface-card border border-token rounded-3xl max-w-md w-full p-6 md:p-8 shadow-2xl relative">
+      <button id="closeLoginModal" onclick="closeLoginModal()" class="absolute top-4 right-4 text-secondary-token hover:text-primary-token p-2 rounded-full">
+        <i class="fa-solid fa-xmark text-lg"></i>
+      </button>
+
+      <div class="text-center mb-6">
+        <div class="w-12 h-12 rounded-2xl bg-red-50 dark:bg-zinc-800 brand-accent flex items-center justify-center mx-auto mb-3 text-xl font-bold">
+          <i class="fa-solid fa-user-shield"></i>
+        </div>
+        <h3 class="font-h1 text-primary-token">Acesse a Ágora</h3>
+        <p class="font-caption text-secondary-token mt-1">Conecte-se para interagir, avaliar e publicar.</p>
+      </div>
+
+      <!-- Container do Botão Google Renderizado Oficialmente -->
+      <div id="googleButtonDiv" class="flex justify-center mb-4"></div>
+
+      <div class="relative flex py-2 items-center mb-4">
+        <div class="flex-grow border-t border-token"></div>
+        <span class="flex-shrink mx-3 font-caption text-secondary-token uppercase tracking-wider">ou e-mail</span>
+        <div class="flex-grow border-t border-token"></div>
+      </div>
+
+      <form id="authForm" onsubmit="handleEmailAuth(event)" class="space-y-3">
+        <div id="nameFieldContainer" class="hidden">
+          <label class="block font-caption font-semibold text-primary-token mb-1">Nome completo</label>
+          <input type="text" id="registerName" placeholder="Seu Nome" class="w-full px-3.5 py-2.5 rounded-xl border border-token surface-card text-xs text-primary-token focus:outline-none focus:ring-2 focus:ring-red-500/20">
+        </div>
+        <div>
+          <label class="block font-caption font-semibold text-primary-token mb-1">E-mail</label>
+          <input type="email" id="authEmail" required placeholder="seu@email.com" class="w-full px-3.5 py-2.5 rounded-xl border border-token surface-card text-xs text-primary-token focus:outline-none focus:ring-2 focus:ring-red-500/20">
+        </div>
+        <div>
+          <label class="block font-caption font-semibold text-primary-token mb-1">Senha</label>
+          <input type="password" id="authPassword" required placeholder="••••••••" class="w-full px-3.5 py-2.5 rounded-xl border border-token surface-card text-xs text-primary-token focus:outline-none focus:ring-2 focus:ring-red-500/20">
+        </div>
+        
+        <button type="submit" id="authSubmitBtn" class="w-full bg-brand hover:opacity-90 text-white font-medium py-2.5 rounded-xl text-xs sm:text-sm transition-all mt-2">
+          Acessar Conta
+        </button>
+
+        <div class="text-center mt-3">
+          <button type="button" onclick="toggleAuthMode()" class="font-caption text-secondary-token hover:text-brand transition-colors">
+            <span id="toggleAuthText">Não tem uma conta? Cadastre-se</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>

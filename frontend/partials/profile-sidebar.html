@@ -1,0 +1,76 @@
+  <!-- ==================== SIDEBAR DE EDIÇÃO DE PERFIL (DIREITA) ==================== -->
+  <div id="profileSidebar" class="fixed inset-0 z-50 overflow-hidden hidden">
+    <!-- Fundo escurecido -->
+    <div id="sidebarOverlay" class="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity opacity-0" onclick="closeProfileSidebar()"></div>
+
+    <!-- Painel Lateral direito -->
+    <div id="sidebarPanel" class="absolute inset-y-0 right-0 max-w-md w-full surface-card border-l border-token shadow-2xl flex flex-col transform translate-x-full transition-transform duration-300 ease-in-out">
+      
+      <!-- Cabeçalho do Sidebar -->
+      <div class="flex items-center justify-between px-6 py-4 border-b border-token">
+        <h3 class="font-h1 text-primary-token text-lg font-bold">Editar Perfil</h3>
+        <button onclick="closeProfileSidebar()" class="text-secondary-token hover:text-primary-token p-2 rounded-full transition-colors">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <!-- Conteúdo com rolagem -->
+      <div class="flex-1 overflow-y-auto p-6 space-y-6">
+        
+        <!-- 1. FOTO DE PERFIL -->
+        <div class="flex flex-col items-center">
+          <div class="relative w-28 h-28">
+            <!-- Imagem de perfil principal: Apenas abre o preview ampliado ao clicar -->
+            <div class="w-full h-full rounded-full overflow-hidden border-2 border-token shadow-md cursor-pointer group" onclick="openAvatarPreview(document.getElementById('sidebarAvatarImg').src)">
+              <img id="sidebarAvatarImg" src="" alt="Avatar" class="w-full h-full object-cover">
+            </div>
+            
+            <!-- Ícone de máquina fotográfica fixo no canto inferior direito: Dispara o upload ao clicar -->
+            <button onclick="openAvatarCropModal()" class="absolute bottom-0 right-0 bg-brand text-white p-2 rounded-full shadow-lg hover:scale-105 transition-transform flex items-center justify-center w-9 h-9 border-2 border-surface" title="Alterar foto de perfil">
+              <i class="fa-solid fa-camera text-xs"></i>
+            </button>
+          </div>
+          <span class="font-caption text-xs text-secondary-token mt-2">Clique na foto para ampliar ou no ícone para alterar</span>
+        </div>
+
+        <!-- 2. NOME (Edição Inline) -->
+        <div class="space-y-1">
+          <label class="block font-caption font-semibold text-xs text-secondary-token uppercase tracking-wider">Nome</label>
+          <div id="nameDisplayContainer" onclick="enableNameEdit()" class="p-2.5 rounded-xl border border-transparent hover:border-token surface-card cursor-pointer flex items-center justify-between group">
+            <span id="profileNameText" class="font-h1 text-primary-token text-base font-medium">Carregando...</span>
+            <i class="fa-solid fa-pen text-xs text-secondary-token opacity-0 group-hover:opacity-100 transition-opacity"></i>
+          </div>
+          <!-- Input oculto para edição inline -->
+          <input type="text" id="profileNameInput" onblur="saveNameEdit()" onkeydown="handleNameKeydown(event)" class="hidden w-full px-3 py-2 rounded-xl border border-token surface-card text-primary-token text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20" placeholder="Seu nome">
+        </div>
+
+        <!-- 3. BIOGRAFIA (Textarea com contador e edição dinâmica) -->
+        <div class="space-y-1">
+          <div class="flex justify-between items-center">
+            <label class="block font-caption font-semibold text-xs text-secondary-token uppercase tracking-wider">Biografia</label>
+            <span id="bioCounter" class="font-caption text-xs text-secondary-token">0/255</span>
+          </div>
+          <textarea id="profileBioTextarea" maxlength="255" oninput="updateBioCounter()" onblur="saveBioEdit()" rows="3" class="w-full p-3 rounded-xl border border-token surface-card text-primary-token text-xs leading-relaxed focus:outline-none focus:ring-2 focus:ring-red-500/20 resize-none" placeholder="Conte um pouco sobre você..."></textarea>
+        </div>
+
+        <!-- 4. REDES SOCIAIS -->
+        <div class="space-y-3">
+          <label class="block font-caption font-semibold text-xs text-secondary-token uppercase tracking-wider">Redes Sociais</label>
+          
+          <!-- Lista de redes sociais cadastradas -->
+          <div id="socialLinksList" class="space-y-2">
+            <!-- Preenchido dinamicamente via JS -->
+          </div>
+
+          <!-- Input para adicionar nova rede social -->
+          <div class="flex gap-2 mt-2">
+            <input type="url" id="newSocialInput" placeholder="https://github.com/seuusuario" class="flex-1 px-3 py-2 rounded-xl border border-token surface-card text-primary-token text-xs focus:outline-none focus:ring-2 focus:ring-red-500/20">
+            <button onclick="addSocialLink()" class="bg-brand hover:opacity-90 text-white px-4 py-2 rounded-xl text-xs font-medium transition-all">
+              Adicionar
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>

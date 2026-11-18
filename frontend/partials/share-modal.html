@@ -1,0 +1,14 @@
+  <!-- ==================== MODAL DE COMPARTILHAMENTO ==================== -->
+  <div id="shareModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm hidden">
+    <div class="surface-card border border-token rounded-3xl max-w-sm w-full p-6 shadow-2xl relative">
+      <button id="closeShareModal" onclick="closeShareModal()" class="absolute top-4 right-4 text-secondary-token hover:text-primary-token p-1 rounded-full">
+        <i class="fa-solid fa-xmark text-lg"></i>
+      </button>
+
+      <h3 class="font-h2 text-primary-token mb-1">Compartilhar Conteúdo</h3>
+      <p class="font-caption text-secondary-token mb-4">Propague esta publicação em suas redes sociais:</p>
+
+      <div id="shareOptionsList" class="grid grid-cols-2 gap-2.5">
+      </div>
+    </div>
+  </div>

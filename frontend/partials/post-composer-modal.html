@@ -1,0 +1,116 @@
+  <!-- ==================== MODAL DE NOVA PUBLICAÇÃO ==================== -->
+  <div id="postComposerModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm hidden">
+    <div class="surface-card border border-token rounded-3xl max-w-xl w-full shadow-2xl relative flex flex-col max-h-[92vh]">
+
+      <!-- Cabeçalho -->
+      <div class="flex items-start justify-between px-6 pt-6 pb-4 border-b border-token">
+        <div>
+          <h3 class="font-h1 text-primary-token text-lg font-bold">Nova publicação</h3>
+          <p class="font-caption text-secondary-token">Escreva algo ou compartilhe o link de outra rede social.</p>
+        </div>
+        <button type="button" onclick="closePostComposer()" class="text-secondary-token hover:text-primary-token p-1.5 rounded-full" aria-label="Fechar">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <form id="postComposerForm" onsubmit="handlePublishPost(event)" class="flex flex-col flex-1 min-h-0">
+
+        <div class="flex-1 overflow-y-auto px-6 py-5 space-y-4">
+
+          <!-- Modo: escrever ou colar link -->
+          <div class="grid grid-cols-2 gap-2">
+            <button type="button" id="composerModeWriteBtn" onclick="switchComposerMode('write')" class="py-2 text-xs font-semibold rounded-xl border border-brand bg-brand text-white transition-all">
+              <i class="fa-solid fa-pen mr-1.5"></i>Escrever
+            </button>
+            <button type="button" id="composerModeLinkBtn" onclick="switchComposerMode('link')" class="py-2 text-xs font-medium rounded-xl border border-token text-secondary-token hover:text-primary-token transition-all">
+              <i class="fa-solid fa-link mr-1.5"></i>A partir de um link
+            </button>
+          </div>
+
+          <!-- Link de outra rede social -->
+          <div id="composerLinkGroup" class="hidden space-y-2">
+            <label class="block font-caption font-semibold text-primary-token" for="composerLinkInput">Link da publicação</label>
+            <div class="relative">
+              <input type="url" id="composerLinkInput" oninput="handleComposerLinkInput()" placeholder="https://..." autocomplete="off"
+                     class="w-full px-3.5 py-2.5 pr-10 rounded-xl border border-token surface-card text-xs text-primary-token focus:outline-none focus:ring-2 focus:ring-red-500/20">
+              <i id="composerLinkSpinner" class="fa-solid fa-circle-notch fa-spin hidden absolute right-3.5 top-1/2 -translate-y-1/2 text-secondary-token text-xs"></i>
+            </div>
+            <p id="composerLinkStatus" class="font-caption text-secondary-token min-h-[1rem]" role="status" aria-live="polite"></p>
+            <div id="composerLinkMediaPreview" class="hidden"></div>
+          </div>
+
+          <!-- Categoria -->
+          <div>
+            <label class="block font-caption font-semibold text-primary-token mb-1" for="composerCategory">Categoria</label>
+            <select id="composerCategory" class="w-full px-3.5 py-2.5 rounded-xl border border-token surface-card text-xs text-primary-token focus:outline-none focus:ring-2 focus:ring-red-500/20">
+              <option value="Notícias">Notícias</option>
+              <option value="Debates">Debates</option>
+            </select>
+          </div>
+
+          <!-- Título -->
+          <div>
+            <label class="block font-caption font-semibold text-primary-token mb-1" for="composerTitle">Título</label>
+            <input type="text" id="composerTitle" maxlength="150" oninput="updateComposerState()" placeholder="Dê um título à publicação"
+                   class="w-full px-3.5 py-2.5 rounded-xl border border-token surface-card text-xs text-primary-token focus:outline-none focus:ring-2 focus:ring-red-500/20">
+          </div>
+
+          <!-- Descrição -->
+          <div>
+            <div class="flex justify-between items-center mb-1">
+              <label class="block font-caption font-semibold text-primary-token" for="composerText">Descrição</label>
+              <span id="composerTextCounter" class="font-caption text-xs text-secondary-token">0/2000</span>
+            </div>
+            <textarea id="composerText" maxlength="2000" rows="5" oninput="updateComposerTextCounter()" placeholder="Escreva sua publicação..."
+                      class="w-full p-3 rounded-xl border border-token surface-card text-xs leading-relaxed text-primary-token focus:outline-none focus:ring-2 focus:ring-red-500/20 resize-none"></textarea>
+          </div>
+
+          <!-- Mídia (imagem, gif ou vídeo) -->
+          <div id="composerMediaGroup">
+            <label class="block font-caption font-semibold text-primary-token mb-1">Imagem, GIF ou vídeo <span class="font-normal text-secondary-token">(opcional, até 50 MB)</span></label>
+            <label id="composerDropArea" for="composerFileInput" class="flex flex-col items-center justify-center border-2 border-dashed border-token rounded-2xl p-6 text-center cursor-pointer hover:border-brand transition-colors">
+              <i class="fa-solid fa-photo-film text-2xl text-secondary-token mb-2"></i>
+              <span class="font-caption text-xs text-primary-token font-medium">Clique para selecionar um arquivo</span>
+              <span class="font-caption text-[11px] text-secondary-token mt-0.5">JPG, PNG, WebP, GIF, MP4, WebM ou MOV</span>
+            </label>
+            <input type="file" id="composerFileInput" class="hidden" accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm,video/quicktime" onchange="handleComposerFileSelected(event)">
+            <div id="composerMediaPreview" class="hidden"></div>
+          </div>
+
+          <!-- Localização -->
+          <div class="flex items-start justify-between gap-3 p-3 rounded-xl bg-slate-50 dark:bg-zinc-800/60 border border-token">
+            <p id="composerLocationStatus" class="font-caption text-secondary-token flex items-start gap-2" role="status" aria-live="polite">
+              <i class="fa-solid fa-location-dot mt-0.5"></i>
+              <span>Sua localização será registrada junto com a publicação.</span>
+            </p>
+            <button type="button" id="composerLocationRetry" onclick="requestComposerLocation()" class="hidden shrink-0 text-xs font-semibold brand-accent hover:underline">
+              Tentar novamente
+            </button>
+          </div>
+
+          <!-- Progresso do envio -->
+          <div id="composerProgress" class="hidden space-y-1">
+            <div class="h-2 rounded-full bg-slate-200 dark:bg-zinc-700 overflow-hidden">
+              <div id="composerProgressBar" class="h-full bg-brand transition-all" style="width: 0%"></div>
+            </div>
+            <p id="composerProgressLabel" class="font-caption text-secondary-token text-center">Enviando...</p>
+          </div>
+
+          <p id="composerError" class="hidden font-caption text-red-500" role="alert"></p>
+        </div>
+
+        <!-- Rodapé -->
+        <div class="px-6 py-4 border-t border-token flex items-center justify-between gap-3">
+          <p id="composerSubmitHint" class="font-caption text-secondary-token"></p>
+          <div class="flex items-center gap-2 shrink-0">
+            <button type="button" onclick="closePostComposer()" class="px-4 py-2.5 rounded-xl border border-token text-secondary-token hover:bg-slate-100 dark:hover:bg-zinc-800 text-xs font-semibold transition-all">
+              Cancelar
+            </button>
+            <button type="submit" id="composerSubmitBtn" disabled class="bg-brand hover:opacity-90 text-white px-5 py-2.5 rounded-xl text-xs font-semibold transition-all shadow-md disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:opacity-40">
+              Publicar
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
