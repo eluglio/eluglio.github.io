@@ -1,0 +1,65 @@
+  <!-- ==================== MODAL DE GESTÃO DE CONVITES ==================== -->
+  <div id="manageInvitesModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm hidden">
+    <div class="surface-card border border-token rounded-3xl max-w-3xl w-full p-6 shadow-2xl relative flex flex-col max-h-[85vh]">
+      
+      <!-- Cabeçalho -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-token mb-4 gap-3">
+        <div>
+          <h3 class="font-h1 text-primary-token text-lg font-bold">Gestão de Convites e Membros</h3>
+          <p class="font-caption text-secondary-token">Revogue convites ou rebaixe permissões conforme suas atribuições.</p>
+        </div>
+        
+        <div class="flex items-center justify-between sm:justify-end gap-3">
+          <!-- Slider para exibir/ocultar revogados -->
+          <label class="flex items-center gap-2 cursor-pointer select-none">
+            <span class="font-caption text-xs text-secondary-token">Mostrar revogados</span>
+            <div class="relative">
+              <input type="checkbox" id="showRevokedToggle" onchange="loadManageInvitesTable()" class="sr-only peer">
+              <div class="w-9 h-5 bg-slate-200 dark:bg-zinc-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-brand"></div>
+            </div>
+          </label>
+
+          <button onclick="closeManageInvitesModal()" class="text-secondary-token hover:text-primary-token p-1.5 rounded-full">
+            <i class="fa-solid fa-xmark text-lg"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Tabela Simplificada e Compacta -->
+      <div class="flex-1 overflow-y-auto border border-token rounded-2xl mb-3">
+        <table class="w-full text-left text-xs text-primary-token border-collapse">
+          <thead class="sticky top-0 bg-slate-100 dark:bg-zinc-800 border-b border-token font-semibold uppercase tracking-wider text-secondary-token">
+            <tr>
+              <th class="p-3.5">Membro / Destinatário</th>
+              <th class="p-3.5 text-center">Status</th>
+              <th class="p-3.5 text-center">Notificações</th>
+              <th class="p-3.5 text-right">Ações</th>
+            </tr>
+          </thead>
+          <tbody id="manageInvitesTableBody" class="divide-y divide-token">
+            <!-- Conteúdo injetado via JS -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Legenda no Rodapé -->
+      <div class="pt-3 border-t border-token flex flex-wrap items-center justify-between text-[11px] text-secondary-token gap-2">
+        <span class="font-semibold">Legenda de Níveis:</span>
+        <div class="flex items-center gap-3">
+          <span class="flex items-center gap-1">
+            <span class="w-4 h-4 rounded-md bg-purple-100 dark:bg-purple-950/40 text-purple-600 border border-purple-200 dark:border-purple-800 flex items-center justify-center font-bold text-[9px]">D</span> Dono
+          </span>
+          <span class="flex items-center gap-1">
+            <span class="w-4 h-4 rounded-md bg-blue-100 dark:bg-blue-950/40 text-blue-600 border border-blue-200 dark:border-blue-800 flex items-center justify-center font-bold text-[9px]">A</span> Admin
+          </span>
+          <span class="flex items-center gap-1">
+            <span class="w-4 h-4 rounded-md bg-emerald-100 dark:bg-emerald-950/40 text-emerald-600 border border-emerald-200 dark:border-emerald-800 flex items-center justify-center font-bold text-[9px]">P</span> Publicador
+          </span>
+          <span class="flex items-center gap-1">
+            <span class="w-4 h-4 rounded-md bg-zinc-100 dark:bg-zinc-800 text-secondary-token border border-token flex items-center justify-center font-bold text-[9px]">C</span> Consumidor
+          </span>
+        </div>
+      </div>
+
+    </div>
+  </div>

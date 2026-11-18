@@ -1,0 +1,17 @@
+:root {
+  --bg: #FAFAFA;
+  --surface: #FFFFFF;
+  --text-primary: #1A1A1A;
+  --text-secondary: #555555;
+  --brand: #DC2828;
+  --border: #E0E0E0;
+}
+
+.dark {
+  --bg: #121212;
+  --surface: #1E1E1E;
+  --text-primary: #F5F5F5;
+  --text-secondary: #A0A0A0;
+  --brand: #FF4D4D;
+  --border: #2C2C2C;
+}

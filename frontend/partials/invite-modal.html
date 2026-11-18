@@ -1,0 +1,65 @@
+  <!-- ==================== MODAL DE CONVITE ==================== -->
+  <div id="inviteModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm hidden">
+    <div class="surface-card border border-token rounded-3xl max-w-md w-full p-6 shadow-2xl relative">
+      <button onclick="closeInviteModal()" class="absolute top-4 right-4 text-secondary-token hover:text-primary-token p-1 rounded-full">
+        <i class="fa-solid fa-xmark text-lg"></i>
+      </button>
+
+      <h3 class="font-h1 text-primary-token text-base font-bold mb-1">Convidar Novo Membro</h3>
+      <p class="font-caption text-secondary-token mb-4">Selecione o nível e a forma de envio do convite.</p>
+
+      <form id="inviteForm" onsubmit="handleSendInvite(event)" class="space-y-4">
+        
+        <!-- Seleção do Nível (Combobox) -->
+        <div>
+          <label class="block font-caption font-semibold text-primary-token mb-1">Nível de Acesso</label>
+          <select id="inviteRole" required class="w-full px-3 py-2.5 rounded-xl border border-token surface-card text-xs text-primary-token focus:outline-none focus:ring-2 focus:ring-red-500/25">
+            <option value="" disabled selected>Carregando níveis permitidos...</option>
+          </select>
+        </div>
+
+        <!-- Tipo de Convite (E-mail, Código ou Usuário Existente) -->
+        <div>
+          <label class="block font-caption font-semibold text-primary-token mb-1">Método de Convite</label>
+          <div class="grid grid-cols-3 gap-2 mb-3">
+            <button type="button" onclick="setInviteMethod('email')" id="methodEmailBtn" class="py-2 text-xs font-semibold rounded-xl border border-brand bg-brand text-white transition-all">E-mail</button>
+            <button type="button" onclick="setInviteMethod('code')" id="methodCodeBtn" class="py-2 text-xs font-medium rounded-xl border border-token text-secondary-token hover:text-primary-token transition-all">Link Único</button>
+            <button type="button" onclick="setInviteMethod('direct')" id="methodDirectBtn" class="py-2 text-xs font-medium rounded-xl border border-token text-secondary-token hover:text-primary-token transition-all">Usuário</button>
+          </div>
+        </div>
+
+        <!-- Campos dinâmicos dependendo do método -->
+        <div id="inviteInputContainer">
+          <!-- Campo para E-mail ou Nome/ID de Usuário Existente -->
+          <div id="fieldEmailGroup">
+            <label class="block font-caption font-semibold text-primary-token mb-1">E-mail do convidado</label>
+            <input type="email" id="inviteEmailInput" placeholder="convidado@email.com" class="w-full px-3.5 py-2.5 rounded-xl border border-token surface-card text-xs text-primary-token focus:outline-none focus:ring-2 focus:ring-red-500/20">
+          </div>
+
+          <div id="fieldDirectGroup" class="hidden">
+            <label class="block font-caption font-semibold text-primary-token mb-1">E-mail ou Nome do Usuário Cadastrado</label>
+            <input type="text" id="inviteUserSearchInput" placeholder="Digite para buscar usuário..." class="w-full px-3.5 py-2.5 rounded-xl border border-token surface-card text-xs text-primary-token focus:outline-none focus:ring-2 focus:ring-red-500/20">
+          </div>
+
+          <div id="fieldCodeGroup" class="hidden">
+            <p class="font-caption text-secondary-token bg-slate-50 dark:bg-zinc-800 p-3 rounded-xl border border-token">
+              Ao gerar o link, um código exclusivo de uso único será criado para você copiar e enviar.
+            </p>
+          </div>
+        </div>
+
+        <button type="submit" class="w-full bg-brand hover:opacity-90 text-white font-medium py-2.5 rounded-xl text-xs sm:text-sm transition-all shadow-md">
+          Enviar / Gerar Convite
+        </button>
+      </form>
+
+      <!-- Área para exibir o link gerado caso seja por código -->
+      <div id="generatedLinkContainer" class="hidden mt-4 pt-4 border-t border-token">
+        <label class="block font-caption font-semibold text-primary-token mb-1">Link de Convite Gerado (Uso Único):</label>
+        <div class="flex gap-2">
+          <input type="text" id="generatedLinkInput" readonly class="flex-1 px-3 py-2 rounded-xl border border-token bg-slate-100 dark:bg-zinc-800 text-xs text-primary-token">
+          <button onclick="copyGeneratedLink()" class="bg-brand text-white px-3 py-2 rounded-xl text-xs font-medium">Copiar</button>
+        </div>
+      </div>
+    </div>
+  </div>

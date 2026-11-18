@@ -1,0 +1,13 @@
+/* Botão flutuante "+" (nova publicação): acompanha a rolagem, canto inferior esquerdo, junto ao feed. */
+.new-post-fab {
+  position: fixed;
+  bottom: 1.5rem;
+  left: 1rem;
+}
+
+/* Em telas largas, encosta na borda esquerda do feed (menu = 16rem; feed = 48rem centralizado). */
+@media (min-width: 768px) {
+  .new-post-fab {
+    left: max(17rem, calc(50vw - 20rem));
+  }
+}
